@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>ExternalInterface Test 1</title>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/swfobject/2.1/swfobject.js"></script>
+		<script type="text/javascript">
+			var flashvars = {};
+			var params = {};
+			params.allowscriptaccess = "always";
+			params.allownetworking = "all";
+			var attributes = {};
+			attributes.id = "NetConnectionExample";
+			swfobject.embedSWF("NetConnectionExample.swf", "flashDiv", "200", "200", "9.0.0", false, flashvars, params, attributes);
+		</script>
+		<script type="text/javascript">
+			function flashMovie(movieName)
+			{
+				return document.getElementById(movieName);
+         	}
+
+			function onytplayerStateChange(value)
+			{
+				switch(value)
+				{
+					case "1": // play begun
+				  		document.forms["myForm"].output.value += "onStateChange" + value + '\n';
+				  		break;
+					case "2": // paused
+				  		document.forms["myForm"].output.value += "onStateChange" +  value + '\n';
+				  		break;
+					default:
+						alert(value);
+						break;
+				}
+			}
+			
+			function onLoading(value)
+			{
+				switch(value)
+				{
+					case "1": // player loaded
+						document.forms["myForm"].output.value += "onLoading" + value + '\n';
+						flashMovie("NetConnectionExample").addEventListener("onStateChange", "onytplayerStateChange");
+				  		break;
+					case "2": // metadata loaded
+				  		document.forms["myForm"].output.value += "onLoading" + value + '\n';
+				  		break;
+				}
+			}
+
+			function sendToFlash(value)
+			{
+				flashMovie("NetConnectionExample").sendToFlash(value);
+			}
+			
+		</script>
+		<style type="text/css">
+			body
+			{
+				font-family: Arial;
+				font-size: 10pt;
+			}
+			textarea
+			{
+				height: 200px;
+				width: 300px;
+			}
+			
+			h1
+			{
+				font-size: 12pt;
+				margin: 0;
+			}
+			div
+			{
+				margin-bottom: 20px;
+			}
+			
+			#videoDiv
+			{
+				border: black 1px solid;
+				width: 500px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<table>
+			<tr>
+				<td>
+					<div id="videoDiv">
+						<div id="flashDiv">
+							<p>This will get replaced with a SWF. If not you need to update your Flash Player.</p>
+						</div>
+					</div>
+				</td>
+				<td valign="top">
+					<textarea name="errorEvent">== event log ==</textarea>
+				<tr>
+			</table>
+				</td>
+			</tr>
+		</table>
+		
+		<div id="testArea">
+        	<form name="myForm">
+			<div>
+				<h1>Load video</h1>
+				URL <input type="text" id="input" name="input" value="" />
+				<a onclick="pause()" href="javascript:void(0);">queue</a> |
+				<a onclick="resume()" href="javascript:void(0);">load and play</a> 
+			</div>
+			
+			<div>
+				<h1>Player control</h1>
+				<a onclick="sendToFlash('play');" href="javascript:void(0);">play</a> |
+				<a onclick="pause()" href="javascript:void(0);">pause</a> |
+				<a onclick="resume()" href="javascript:void(0);">resume</a> 
+			</div>
+			
+		</div>
+	</body>
+</html>

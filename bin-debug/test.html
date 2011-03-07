@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>ExternalInterface Test 1</title>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/swfobject/2.1/swfobject.js"></script>
+		<script type="text/javascript">
+			var flashvars = {};
+			var params = {};
+			params.allowscriptaccess = "always";
+			params.allownetworking = "all";
+			params.allowfullscreen = "true";
+			var attributes = {};
+			attributes.id = "NetConnectionExample";
+			swfobject.embedSWF("NetConnectionExample.swf", "flashDiv", "200", "200", "9.0.0", false, flashvars, params, attributes);
+		</script>
+		<script type="text/javascript">
+			function flashMovie(movieName)
+			{
+				return document.getElementById(movieName);
+         	}
+
+			function onStateChange(value)
+			{
+				logger = document.getElementById("logger");
+				
+				switch(value)
+				{
+					case 1: // play begun
+				  		logger.value += "onStateChange - play \n";
+				  		break;
+					case 2: // paused
+				  		logger.value += "onStateChange - pause \n";
+				  		break;
+					default:
+						logger.value += value;
+						break;
+				}
+			}
+			
+			function onLoading(value)
+			{
+				logger = document.getElementById("logger");
+				flashMovie("NetConnectionExample").addEventListener("onStateChange", "onytplayerStateChange");
+				switch(value)
+				{
+					case 1: // player loaded
+						logger.value += "onLoading - player loaded \n";
+						
+				  		break;
+					case 2: // metadata loaded
+				  		logger.value += "onLoading - metadata loaded \n";
+				  		break;
+				  	case 3: // metadata loaded
+				  		logger.value += "onLoading - ready to play \n";
+				  		break;
+				  	default:
+				  		logger.value += "onLoading - " + value + "\n";
+				}
+			}
+
+			function sendToFlash(action)
+			{
+				value = ' ';
+				flashMovie("NetConnectionExample").sendToFlash(action, value);
+			}
+			
+			function sendToFlashUrl(action)
+			{
+				value = document.getElementById("urlInput").value;
+				alert(value);
+				flashMovie("NetConnectionExample").sendToFlash(action, value);
+			}
+
+		</script>
+		<style type="text/css">
+			body
+			{
+				font-family: Arial;
+				font-size: 10pt;
+			}
+			textarea
+			{
+				height: 200px;
+				width: 300px;
+			}
+			
+			h1
+			{
+				font-size: 12pt;
+				margin: 0;
+			}
+			div
+			{
+				margin-bottom: 20px;
+			}
+			
+			#videoDiv
+			{
+				border: black 1px solid;
+				width: 500px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<table>
+			<tr>
+				<td>
+					<div id="videoDiv">
+						<div id="flashDiv">
+							<p>This will get replaced with a SWF. If not you need to update your Flash Player.</p>
+						</div>
+					</div>
+				</td>
+				<td valign="top">
+					<textarea name="output" id="logger"></textarea>
+				<tr>
+			</table>
+				</td>
+			</tr>
+		</table>
+		
+		<div id="testArea">
+        	<form name="myForm">
+        	<div>
+        		<a onclick="sendToFlash('fullscreen')" href="javascript:void(0);">fullscreen</a> 
+        	</div>
+			<div>
+				<h1>Load video</h1>
+				
+				<a onclick="sendToFlashUrl('load')" href="javascript:void(0);">load and play</a> 
+				<input type="text" id="urlInput" value="" style="width:400px;" />
+			</div>
+			
+			<div>
+				<h1>Player control</h1>
+				<a onclick="sendToFlash('play')" href="javascript:void(0);">play</a> |
+				<a onclick="sendToFlash('pause')" href="javascript:void(0);">pause</a> |
+				<a onclick="sendToFlash('resume')" href="javascript:void(0);">resume</a> 
+				<a onclick="sendToFlash('stop')" href="javascript:void(0);">stop</a> 
+			</div>
+			
+		</div>
+	</body>
+</html>
