@@ -48,7 +48,6 @@ package
 		public function NetConnectionExample() 
 		{
 			var player:VideoPlayer = new VideoPlayer();
-			player.
 			
 			this.connection = new NetConnection();
 			this.connection.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
@@ -63,14 +62,14 @@ package
 			video.attachNetStream(videoStream);
 			addChild(video);
 			
+			
+			
 			this.addEventListener(Event.ENTER_FRAME, loading);
 			
 			// hack
 			this.timer = new Timer(1); //Set a timer for 1 ms.
 			timer.addEventListener(TimerEvent.TIMER, onTimer);
-			var extensionIndex:Number = filename.lastIndexOf( '.' );
 			
-			var extension:String = filename.substr( extensionIndex + 1, filename.length );
 		}
 		
 		private function toggleFullScreen():void 

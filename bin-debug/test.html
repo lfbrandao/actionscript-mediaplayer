@@ -11,8 +11,8 @@
 			params.allownetworking = "all";
 			params.allowfullscreen = "true";
 			var attributes = {};
-			attributes.id = "NetConnectionExample";
-			swfobject.embedSWF("NetConnectionExample.swf", "flashDiv", "200", "200", "9.0.0", false, flashvars, params, attributes);
+			attributes.id = "MediaPlayer";
+			swfobject.embedSWF("MediaPlayer.swf", "flashDiv", "200", "200", "9.0.0", false, flashvars, params, attributes);
 		</script>
 		<script type="text/javascript">
 			function flashMovie(movieName)
@@ -62,14 +62,13 @@
 			function sendToFlash(action)
 			{
 				value = ' ';
-				flashMovie("NetConnectionExample").sendToFlash(action, value);
+				flashMovie("MediaPlayer").sendToFlash(action, value);
 			}
 			
 			function sendToFlashUrl(action)
 			{
 				value = document.getElementById("urlInput").value;
-				alert(value);
-				flashMovie("NetConnectionExample").sendToFlash(action, value);
+				flashMovie("MediaPlayer").sendToFlash(action, value);
 			}
 
 		</script>
@@ -130,7 +129,7 @@
 				<h1>Load video</h1>
 				
 				<a onclick="sendToFlashUrl('load')" href="javascript:void(0);">load and play</a> 
-				<input type="text" id="urlInput" value="" style="width:400px;" />
+				<input type="text" id="urlInput" value="http://www.mediacollege.com/video-gallery/testclips/20051210-w50s.flv" style="width:400px;"></>
 			</div>
 			
 			<div>

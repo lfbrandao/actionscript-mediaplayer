@@ -9,12 +9,12 @@ package
 	import flash.events.SecurityErrorEvent;
 	import flash.events.TimerEvent;
 	import flash.external.ExternalInterface;
+	import flash.media.Sound;
+	import flash.media.SoundChannel;
 	import flash.media.Video;
 	import flash.net.NetConnection;
 	import flash.net.NetStream;
 	import flash.utils.Timer;
-	import flash.media.Sound;
-	import flash.media.SoundChannel;
 	
 	public class VideoPlayer extends Sprite 
 	{
@@ -26,6 +26,11 @@ package
 		private var vidInfoObj:Object = new Object();
 		private var eventListeners:Array = new Array();
 		
+		private var status:String = "";
+		private static const STATUS_READY_TO_PLAY:String = "NetStream.Buffer.Full";
+		private static const STATUS_PAUSED:String = "";
+		private static const STATUS_STOPPED:String = "";
+		
 		private static const ON_LOADING_PLAYER_LOADED:int = 1;
 		private static const ON_LOADING_METADATA_LOADED:int = 2;
 		private static const ON_LOADING_MEDIA_LOADED:int = 3;
@@ -35,14 +40,19 @@ package
 		private static const ON_STATE_CHANGE_STOPPED:int = 3;
 		private static const ON_STATE_CHANGE_ENDED:int = 4;
 		
-		public function NetConnectionExample() 
+		public static const ON_LOADING:String = "onLoading";
+		public static const ON_STATE_CHANGE:String = "onStateChange";
+		
+		
+		
+		public function VideoPlayer():void
 		{
 			this.connection = new NetConnection();
 			this.connection.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
 			this.connection.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
 			this.connection.connect(null);
 			
-			video = new Video(stage.stageWidth,stage.stageHeight);
+			video = new Video();
 			video.attachNetStream(videoStream);
 			addChild(video);
 			
@@ -53,25 +63,33 @@ package
 			timer.addEventListener(TimerEvent.TIMER, onTimer);
 		}
 		
-		public function load(videoURI:String):void
+		public function load(url:String):void
 		{
-			// close the current stream and stop the video playback (if any)
-			videoStream.close();
+			//timer.start();
+			this.videoURL = url;
+			this.log(videoURL);
+			videoStream.play(videoURL);
 		}
 		
 		public function play():void
 		{
-			timer.start();
-			videoStream.play(videoURL);
+			this.log("play. status: " + this.status);
+			if(this.status == STATUS_READY_TO_PLAY)
+			{
+				videoStream.resume();
+			}
 		}
 		
 		public function stop():void
 		{
 			videoStream.close();
-			audioStream.close();
+			video.clear();
 		}
 		
-		
+		public function pause():void
+		{
+			videoStream.pause();
+		}
 		
 		// -------- Error Handling Events 
 		private function netStatusHandler(event:NetStatusEvent):void 
@@ -90,9 +108,11 @@ package
 					this.onStateChange(ON_STATE_CHANGE_PLAY_BEGUN);
 					break;
 				case "NetStream.Buffer.Full":
+					this.pause();
+					this.status = STATUS_READY_TO_PLAY;
 					//this.log("NetStream.Buffer.Full");
 					this.onLoading(ON_LOADING_MEDIA_LOADED);
-					
+
 				case "NetStream.FileStructureInvalid":
 					//this.log("The MP4's file structure is invalid.");
 					break;
@@ -100,7 +120,6 @@ package
 					//this.log("The MP4 doesn't contain any supported tracks");
 					break;
 			}
-			fireEvent("onStatsChange", event.info.code);
 		}
 		
 		private function securityErrorHandler(event:SecurityErrorEvent):void 
@@ -110,6 +129,7 @@ package
 		
 		private function connectStream():void 
 		{
+			this.log("netstream created");
 			videoStream = new NetStream(connection);
 			videoStream.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
 			videoStream.client = this;
@@ -146,37 +166,25 @@ package
 			this.onLoading(2);
 		}
 		
-		public function addListener(eventName:String, eventListener:String):void
-		{
-			this.log("New listener " + eventName + " " + eventListener);
-			this.eventListeners["eventName"] = eventListener;
-		}
 		
 		// -------- Events
 		private function onError(eventValue:int):void
 		{
-			this.fireEvent("onError", eventValue);  
+			this.dispatchEvent(new PlayerEvent(PlayerEvent.ON_ERROR, eventValue));  
 		}
 		
 		private function onStateChange(eventValue:int):void
 		{
-			this.fireEvent("onStateChange", eventValue);  
+			this.dispatchEvent(new PlayerEvent(PlayerEvent.ON_STATE_CHANGE, eventValue));  
 		}
 		
 		private function onLoading(eventValue:int):void 
 		{  
-			this.log("onLoading " + eventValue);
-			this.fireEvent("onLoading", eventValue);
+			
+			this.dispatchEvent(new PlayerEvent(PlayerEvent.ON_LOADING, eventValue));
 		}
 		
 		// -------- Helper methods
-		private function fireEvent(eventName:String, eventValue:int) : void  
-		{  
-			if(ExternalInterface.available)  
-			{  
-				ExternalInterface.call(eventName, eventValue);  
-			}  
-		}
 		
 		private var verbose:Boolean = true;
 		
