@@ -15,6 +15,7 @@ package
 	import flash.net.NetConnection;
 	import flash.net.NetStream;
 	import flash.utils.Timer;
+	import players.VideoPlayer;
 	
 	public class NetConnectionExample extends Sprite 
 	{
@@ -47,7 +48,7 @@ package
 				
 		public function NetConnectionExample() 
 		{
-			var player:VideoPlayer = new VideoPlayer();
+			var player:VideoPlayer = new VideoPlayer(200,200);
 			
 			this.connection = new NetConnection();
 			this.connection.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
