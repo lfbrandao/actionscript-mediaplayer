@@ -15,12 +15,20 @@
 			swfobject.embedSWF("MediaPlayer.swf", "flashDiv", "320", "240", "9.0.0", false, flashvars, params, attributes);
 		</script>
 		<script type="text/javascript">
+			window.onload = init;
+			
+			function init()
+			{
+				flashMovie("MediaPlayer").addEventListener("onStateChange", "onPlayerStateChange");
+				flashMovie("MediaPlayer").addEventListener("onLoading", "onPlayerLoading");
+			}
+		
 			function flashMovie(movieName)
 			{
 				return document.getElementById(movieName);
          	}
 
-			function onStateChange(value)
+			function onPlayerStateChange(value)
 			{
 				logger = document.getElementById("logger");
 				
@@ -38,10 +46,10 @@
 				}
 			}
 			
-			function onLoading(value)
+			function onPlayerLoading(value)
 			{
 				logger = document.getElementById("logger");
-				flashMovie("NetConnectionExample").addEventListener("onStateChange", "onytplayerStateChange");
+				
 				switch(value)
 				{
 					case 1: // player loaded
@@ -52,7 +60,7 @@
 				  		logger.value += "onLoading - metadata loaded \n";
 				  		break;
 				  	case 3: // metadata loaded
-				  		logger.value += "onLoading - ready to play \n";
+				  		logger.value += "onLoading - can play \n";
 				  		break;
 				  	default:
 				  		logger.value += "onLoading - " + value + "\n";
@@ -65,10 +73,42 @@
 				flashMovie("MediaPlayer").sendToFlash(action, value);
 			}
 			
-			function sendToFlashUrl(action)
+			function loadMovie()
 			{
-				value = document.getElementById("urlInput").value;
-				flashMovie("MediaPlayer").sendToFlash(action, value);
+				url = document.getElementById("txtUrl").value;
+				startAt = document.getElementById("txtVideoStart").value;
+				value = url + "," + startAt;
+				flashMovie("MediaPlayer").sendToFlash("load", value);
+			}
+			
+			function setVolume()
+			{
+				value = document.getElementById("txtSetVolume").value;
+				flashMovie("MediaPlayer").sendToFlash("setVolume", value);
+			}
+			
+			function getVolume()
+			{
+				txtBox = document.getElementById("txtReadVolume");
+				txtBox.value = flashMovie("MediaPlayer").getVolume();
+			}
+			
+			function getCurrentTime()
+			{
+				txtBox = document.getElementById("txtTime");
+				txtBox.value = flashMovie("MediaPlayer").sendToFlash('getCurrentTime','');
+			}
+			
+			function getStartTime()
+			{
+				txtBox = document.getElementById("txtTime");
+				txtBox.value = flashMovie("MediaPlayer").sendToFlash('getStartTime','');
+			}
+			
+			function getEndTime()
+			{
+				txtBox = document.getElementById("txtTime");
+				txtBox.value = flashMovie("MediaPlayer").sendToFlash('getEndTime','');
 			}
 
 		</script>
@@ -127,8 +167,11 @@
 			<div>
 				<h1>Load video</h1>
 				
-				<a onclick="sendToFlashUrl('load')" href="javascript:void(0);">load</a> 
-				<input type="text" id="urlInput" value="http://www.mediacollege.com/video-gallery/testclips/20051210-w50s.flv" style="width:400px;"></>
+				<a onclick="loadMovie()" href="javascript:void(0);">load</a>
+				<br/>
+				Url <input type="text" id="txtUrl" value="http://www.mediacollege.com/video-gallery/testclips/20051210-w50s.flv" style="width:400px;"/>
+				<br/>
+				Start playing at <input type="text" id="txtVideoStart" value="0"/>
 			</div>
 			
 			<div>
@@ -137,6 +180,22 @@
 				<a onclick="sendToFlash('pause')" href="javascript:void(0);">pause</a> |
 				<a onclick="sendToFlash('resume')" href="javascript:void(0);">resume</a> 
 				<a onclick="sendToFlash('stop')" href="javascript:void(0);">stop</a> 
+			</div>
+			<div>
+				<h1>Volume</h1>
+				<a onclick="getVolume()" href="javascript:void(0);">get value</a> 
+				<input readonly="readonly" type ="text" id="txtReadVolume" value="1" style="background-color:#cccccc;"/> 
+				<br/>
+				<a onclick="setVolume()" href="javascript:void(0);">change</a> [0:1] 
+				<input type ="text" id="txtSetVolume" /> 
+			</div>
+			<div>
+				<h1>Time</h1>
+				<a onclick="getStartTime()" href="javascript:void(0);">get start time</a> | 
+				<a onclick="getEndTime()" href="javascript:void(0);">get end time</a> | 
+				<a onclick="getCurrentTime()" href="javascript:void(0);">get current time</a> 
+				<input readonly="readonly" type ="text" id="txtTime" value="1" style="background-color:#cccccc;"/> 
+			
 			</div>
 			
 		</div>

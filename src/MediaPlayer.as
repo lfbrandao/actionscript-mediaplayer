@@ -8,6 +8,9 @@ package
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.external.ExternalInterface;
+	import flash.geom.Point;
+	import flash.media.SoundMixer;
+	import flash.media.SoundTransform;
 	import flash.utils.*;
 	
 	import players.AudioPlayer;
@@ -28,21 +31,22 @@ package
 		private static const STATUS_PAUSED:String = "pause";
 		private static const STATUS_STOPPED:String = "stopped";
 		
+		private var eventsListeners:Dictionary;
 		
 		public function MediaPlayer()
 		{
-			this.loaderInfo.addEventListener(Event.COMPLETE, objectLoaded);
+			this.eventsListeners = new Dictionary();
 			
+			// notify listeners that the player is loaded
+			this.loaderInfo.addEventListener(Event.COMPLETE, onPlayerLoaded);
 			
 			this.currentFileURL = "";
+		
 			// create and configure the video player
-			stage.align = StageAlign.TOP_RIGHT;
-			stage.scaleMode = StageScaleMode.EXACT_FIT;
-			
-			
 			this.videoPlayer = new VideoPlayer(stage.width, stage.height);
-			this.videoPlayer.addEventListener(PlayerEvent.ON_LOADING, onLoading);
-			this.videoPlayer.addEventListener(PlayerEvent.ON_STATE_CHANGE, onStateChange);
+			this.videoPlayer.addEventListener(PlayerEvent.ON_LOADING, onPlayerEvent);
+			this.videoPlayer.addEventListener(PlayerEvent.ON_ERROR, onPlayerEvent);
+			this.videoPlayer.addEventListener(PlayerEvent.ON_STATE_CHANGE, onPlayerEvent);
 			
 			// create and configure the audio player
 			this.audioPlayer = new AudioPlayer();
@@ -53,33 +57,98 @@ package
 			this.addChild(this.videoPlayer);
 			this.addChild(this.audioPlayer);
 			
-			
-			
-			this.log("players created");
-			
 			// setup entry point for javascript calls
-			ExternalInterface.addCallback("sendToFlash", fromJS);
-		}
-		
-		private function objectLoaded(event:Event):void
-		{
+			ExternalInterface.addCallback("sendToFlash", playerControl);
+			ExternalInterface.addCallback("getVolume", getVolume);
 			
-			this.log("initial stage width: " + stage.width + "height: " + stage.height);
-			this.log("initial loaderInfo width: " + loaderInfo.width + "height: " + loaderInfo.height);
+			ExternalInterface.addCallback("addEventListener", addListener);
+			ExternalInterface.addCallback("removeEventListener", removeListener);
+			
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
 		}
 		
-		private function onLoading(event:PlayerEvent):void 
+		private function addListener(eventName:String, listenerName:String):void
 		{
-			this.log("onLoading stage width: " + stage.width + "height: " + stage.height);
-			this.log("onLoading: " + event.value);
-			this.fireEvent("onLoading", event.value);
+			this.log("addListener " + eventName);
+			// TO-DO - try/ catch, check if listener name is correct, avoid cast
+			if(this.eventsListeners[eventName] == null)
+			{
+				this.log("addListener new");
+				this.eventsListeners[eventName] = new Array();
+			}
+			(this.eventsListeners[eventName] as Array).push(listenerName);
 		}
 		
-		private function onStateChange(event:PlayerEvent):void 
+		private function removeListener(eventName:String, listenerName:String):void
 		{
-			this.log("onStateChange: " + event.value);
-			this.fireEvent("onStateChange", event.value);
+			if(this.eventsListeners[eventName] != null)
+			{
+				var listeners:Array = this.eventsListeners[eventName] as Array;
+				var listenerIndex:int = listeners.indexOf(listenerName); 
+				
+				if(listenerIndex > -1)
+				{
+					this.eventsListeners[eventName] = listeners.splice(listenerIndex,1);
+				}
+			}	
 		}
+		
+		private function playerControl(action:String, value:String) : Number
+		{
+			this.log("fromJS " + action + " : " + value);
+			if(action == "play")
+			{
+				this.play();
+			}
+			else if(action == "stop")
+			{
+				this.stop();
+			}
+			else if(action == "pause")
+			{
+				this.pause();
+			}
+			else if(action == "load")
+			{
+				// TO-DO - check params
+				var params:Array = value.split(",");
+				this.load(params[0], params[1]);
+			}
+			else if(action == "setVolume")
+			{
+				this.setVolume(Number(value));
+			}
+			else if(action == "getCurrentTime")
+			{
+				this.log("time " + this.currentPlayer.getCurrentTime());
+				return this.currentPlayer.getCurrentTime();
+			}
+			else if(action == "getStartTime")
+			{
+				this.log("time " + this.currentPlayer.getCurrentTime());
+				return this.currentPlayer.getStartTime();
+			}
+			else if(action == "getEndTime")
+			{
+				this.log("time " + this.currentPlayer.getCurrentTime());
+				return this.currentPlayer.getEndTime();
+			}
+			
+			return -1;
+		}
+		
+		private function onPlayerLoaded(event:Event):void
+		{
+			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
+		}
+		
+		private function onPlayerEvent(event:PlayerEvent):void
+		{
+			this.dispatchEventToJavascript(event.type, event.value);
+		}
+		
+		// -------- Playback control
 		
 		private function load(url:String, startAt:int = 0):void
 		{
@@ -115,6 +184,23 @@ package
 			this.currentPlayer.play();
 		}
 		
+		// -------- Volume control
+		
+		public function getVolume():Number
+		{
+			// TO-DO - avoid cast + error handling 
+			return SoundMixer.soundTransform.volume;
+		}
+		
+		public function setVolume(value:Number):void
+		{
+			/*this.videoPlayer.soundTransform = new SoundTransform(value);
+			this.log("in " + SoundMixer.areSoundsInaccessible());*/
+			this.log("volume " + value);
+			SoundMixer.soundTransform = new SoundTransform(value);
+		}
+		
+		// -------- Media type (audio/video)
 		
 		private function getFileType(url:String)
 		{
@@ -131,35 +217,26 @@ package
 			}
 		}
 		
-		private function fromJS(action:String, value:String) : void
-		{
-			this.log("fromJS " + action);
-			if(action == "play")
-			{
-				this.play();
-			}
-			else if(action == "stop")
-			{
-				this.stop();
-			}
-			else if(action == "pause")
-			{
-				this.pause();
-			}
-			else if(action == "load")
-			{
-				this.load(value,0);
-				
-			}
-		}
-		
-		private function fireEvent(eventName:String, eventValue:int) : void  
+		private function dispatchEventToJavascript(eventName:String, eventValue:int) : void  
 		{  
+			this.log("EVENT " + eventName);
+			// TO-DO if not available?
 			if(ExternalInterface.available)  
-			{  
-				ExternalInterface.call(eventName, eventValue);  
+			{
+				if(this.eventsListeners[eventName] != null)
+				{
+					var listeners:Array = this.eventsListeners[eventName] as Array;
+					
+					for(var i:int = 0; i < listeners.length; i++)
+					{
+						this.log("listener: " + eventName + " : " + eventValue);	
+						ExternalInterface.call(listeners[i], eventValue);
+					}
+				}
 			}  
 		}
+		
+		// -------- Volume control
 		
 		private var verbose:Boolean = true;
 		
@@ -171,6 +248,5 @@ package
 				trace(currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds() + " " + message);
 			}
 		}
-
 	}
 }
