@@ -1,0 +1,14 @@
+Actionscript media-player
+
+=Components
+
+==MediaPlayer 
+Extends Sprite
+Main class. Instantiates and controls both the video and the audio players. Exposes an API for Javascript.
+
+==VideoPlayer extends Sprite, implements IPlayer
+Extends Sprite, Implements IPlayer
+Video player. 
+
+==AudioPlayer extends Sprite, implements IPlayer
+MP3 player. 
