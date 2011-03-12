@@ -1,14 +1,54 @@
-Actionscript media-player
+=Actionscript media-player
 
-=Components
+== Know issues
+* video player is not resizable yet
+* seek does not work for all MP4 video files - probably due to missing keyframes or seekpoints
+* time status methods and events are not working properly for the audio player
 
-==MediaPlayer 
+== Missing features
+* fade
+* toggle mute (can be accomplished by changing the volume to 0)
+* playerId
+* configurable video stop time
+
+== Components
+* MediaPlayer 
 Extends Sprite
 Main class. Instantiates and controls both the video and the audio players. Exposes an API for Javascript.
 
-==VideoPlayer extends Sprite, implements IPlayer
+* VideoPlayer extends Sprite, implements IPlayer
 Extends Sprite, Implements IPlayer
 Video player. 
 
-==AudioPlayer extends Sprite, implements IPlayer
+* AudioPlayer extends Sprite, implements IPlayer
 MP3 player. 
+
+== Events codes
+* onLoading
+	1 : Player Loaded
+	2 : Metadata Loaded
+	3 : Video (Audio) CanPlay (at cue-in)
+	TO-DO -> 4 : Video (Audio) CanPlayThrough
+	
+* onStateChange
+	1 : Play begun
+	2 : Paused
+	3 : Stopped
+	5 : on Time Change (every 500ms)
+	4 : Video ended
+	
+* onError
+	1 : Failed To Load Resource (user aborted, network interrupted, decoding error)
+	2 : File Type Not Supported
+
+== Subscribing / unsubscribing to events from Javascript
+* Subscribe: flashobject.addEventListener(event_name, subscriber_method_name);
+* Unsubscribe: flashobject.removeListener(event_name, subscriber_method_name);)
+
+* onLoading
+	Subscriber method signature: function subscriber_method_name(eventid, eventvalue)
+* onStateChange
+* onError	
+	Subscriber method signature: function subscriber_method_name(eventid)
+
+	
