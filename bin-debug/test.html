@@ -21,6 +21,7 @@
 			{
 				flashMovie("MediaPlayer").addEventListener("onStateChange", "onPlayerStateChange");
 				flashMovie("MediaPlayer").addEventListener("onLoading", "onPlayerLoading");
+				flashMovie("MediaPlayer").addEventListener("onError", "onPlayerError");
 			}
 		
 			function flashMovie(movieName)
@@ -28,11 +29,11 @@
 				return document.getElementById(movieName);
          	}
 
-			function onPlayerStateChange(value)
+			function onPlayerStateChange(eventid, eventvalue)
 			{
 				logger = document.getElementById("logger");
 				
-				switch(value)
+				switch(eventid)
 				{
 					case 1: // play begun
 				  		logger.value += "onStateChange - play \n";
@@ -40,8 +41,17 @@
 					case 2: // paused
 				  		logger.value += "onStateChange - pause \n";
 				  		break;
+					case 3: // stopped
+					  	logger.value += "onStateChange - stop \n";
+					  	break;
+					case 4: // ended
+						logger.value += "onStateChange - ended \n";
+						break;
+					case 5: // ended
+						logger.value += "onStateChange - time " + eventvalue + "\n";
+						break;
 					default:
-						logger.value += value;
+						logger.value += eventid;
 						break;
 				}
 			}
@@ -64,6 +74,22 @@
 				  		break;
 				  	default:
 				  		logger.value += "onLoading - " + value + "\n";
+				}
+			}
+			
+			function onPlayerError(value)
+			{
+				logger = document.getElementById("logger");
+				
+				switch(value)
+				{
+					case 1: // player loaded
+						logger.value += "onError - failed to load file \n";
+						
+				  		break;
+					case 2: // metadata loaded
+				  		logger.value += "onError - wrong url or invalid file \n";
+				  		break;
 				}
 			}
 
@@ -162,14 +188,11 @@
 		<div id="testArea">
         	<form name="myForm">
         	<div>
-        		<a onclick="sendToFlash('fullscreen')" href="javascript:void(0);">fullscreen</a> 
-        	</div>
-			<div>
 				<h1>Load video</h1>
 				
 				<a onclick="loadMovie()" href="javascript:void(0);">load</a>
 				<br/>
-				Url <input type="text" id="txtUrl" value="http://www.mediacollege.com/video-gallery/testclips/20051210-w50s.flv" style="width:400px;"/>
+				Url <input type="text" id="txtUrl" value="http://mediapm.edgesuite.net/ovp/content/demo/video/elephants_dream/elephants_dream_768x428_24.0fps_608kbps.mp4" style="width:400px;"/>
 				<br/>
 				Start playing at <input type="text" id="txtVideoStart" value="0"/>
 			</div>

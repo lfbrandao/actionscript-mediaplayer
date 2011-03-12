@@ -1,5 +1,7 @@
 package
 {
+	import configuration.Consts;
+	
 	import events.PlayerEvent;
 	
 	import flash.display.LoaderInfo;
@@ -7,6 +9,7 @@ package
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
+	import flash.events.TimerEvent;
 	import flash.external.ExternalInterface;
 	import flash.geom.Point;
 	import flash.media.SoundMixer;
@@ -33,6 +36,8 @@ package
 		
 		private var eventsListeners:Dictionary;
 		
+		private var timeChangeTimer:Timer;
+		
 		public function MediaPlayer()
 		{
 			this.eventsListeners = new Dictionary();
@@ -50,6 +55,9 @@ package
 			
 			// create and configure the audio player
 			this.audioPlayer = new AudioPlayer();
+			this.audioPlayer.addEventListener(PlayerEvent.ON_LOADING, onPlayerEvent);
+			this.audioPlayer.addEventListener(PlayerEvent.ON_ERROR, onPlayerEvent);
+			this.audioPlayer.addEventListener(PlayerEvent.ON_STATE_CHANGE, onPlayerEvent);
 			
 			this.currentPlayer = this.videoPlayer;
 			
@@ -66,6 +74,9 @@ package
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
+			
+			this.timeChangeTimer = new Timer(500);
+			this.timeChangeTimer.addEventListener(TimerEvent.TIMER, onTimeChange);
 		}
 		
 		private function addListener(eventName:String, listenerName:String):void
@@ -96,18 +107,21 @@ package
 		
 		private function playerControl(action:String, value:String) : Number
 		{
-			this.log("fromJS " + action + " : " + value);
+			//this.log("fromJS " + action + " : " + value);
 			if(action == "play")
 			{
 				this.play();
+				this.timeChangeTimer.start();
 			}
 			else if(action == "stop")
 			{
 				this.stop();
+				this.timeChangeTimer.stop();
 			}
 			else if(action == "pause")
 			{
 				this.pause();
+				this.timeChangeTimer.stop();
 			}
 			else if(action == "load")
 			{
@@ -138,6 +152,11 @@ package
 			return -1;
 		}
 		
+		public function onTimeChange(event:TimerEvent):void
+		{
+			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_STATE_CHANGE, Consts.ON_STATE_CHANGE_TIME, this.currentPlayer.getCurrentTime()));
+		}
+		
 		private function onPlayerLoaded(event:Event):void
 		{
 			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
@@ -145,15 +164,14 @@ package
 		
 		private function onPlayerEvent(event:PlayerEvent):void
 		{
-			this.dispatchEventToJavascript(event.type, event.value);
+			this.log("time " + event.eventValue);
+			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
 		}
 		
 		// -------- Playback control
 		
 		private function load(url:String, startAt:int = 0):void
 		{
-			this.stop();
-			
 			var fileType:String = this.getFileType(url);
 			
 			switch(fileType)
@@ -217,7 +235,7 @@ package
 			}
 		}
 		
-		private function dispatchEventToJavascript(eventName:String, eventValue:int) : void  
+		private function dispatchEventToJavascript(eventName:String, eventId:int, eventValue:Number = 0.00) : void  
 		{  
 			this.log("EVENT " + eventName);
 			// TO-DO if not available?
@@ -229,12 +247,20 @@ package
 					
 					for(var i:int = 0; i < listeners.length; i++)
 					{
-						this.log("listener: " + eventName + " : " + eventValue);	
-						ExternalInterface.call(listeners[i], eventValue);
+						this.log("listener: " + eventName + " : " + eventId);
+						if(eventName == Consts.ON_STATE_CHANGE)
+						{
+							ExternalInterface.call(listeners[i], eventId, eventValue);
+						}
+						else
+						{
+							ExternalInterface.call(listeners[i], eventId);
+						}
 					}
 				}
 			}  
 		}
+		
 		
 		// -------- Volume control
 		

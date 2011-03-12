@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<config>
+  <param id="autoplay" value="0" />
+  <param id="isMp3" value="mp3" />
+</config>
