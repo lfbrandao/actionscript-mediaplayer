@@ -10,6 +10,7 @@
 * toggle mute (can be accomplished by changing the volume to 0)
 * playerId
 * configurable video stop time
+* WAV support
 
 == Components
 * MediaPlayer 
