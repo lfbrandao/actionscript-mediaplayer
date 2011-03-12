@@ -237,7 +237,6 @@ package
 		
 		private function dispatchEventToJavascript(eventName:String, eventId:int, eventValue:Number = 0.00) : void  
 		{  
-			this.log("EVENT " + eventName);
 			// TO-DO if not available?
 			if(ExternalInterface.available)  
 			{
@@ -247,7 +246,6 @@ package
 					
 					for(var i:int = 0; i < listeners.length; i++)
 					{
-						this.log("listener: " + eventName + " : " + eventId);
 						if(eventName == Consts.ON_STATE_CHANGE)
 						{
 							ExternalInterface.call(listeners[i], eventId, eventValue);
@@ -264,7 +262,7 @@ package
 		
 		// -------- Volume control
 		
-		private var verbose:Boolean = true;
+		private var verbose:Boolean = false;
 		
 		private function log(message:String):void
 		{

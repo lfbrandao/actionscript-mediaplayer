@@ -88,8 +88,9 @@ package players
 		
 		public function play():void
 		{
+			this.log("PLAY " + this.startTime + " " + this.status);
 			this.onStateChange(Consts.ON_STATE_CHANGE_PLAYING);
-			if(this.startTime != 0)
+			if(((this.startTime != 0) && (this.status == Consts.STATUS_LOADING)) || this.status == Consts.STATUS_STOPPED)
 			{
 			    videoStream.seek(this.startTime);
 			}
@@ -98,14 +99,16 @@ package players
 		
 		public function stop():void
 		{
+			this.status = Consts.STATUS_STOPPED;
 			this.onStateChange(Consts.ON_STATE_CHANGE_STOPPED);
-			videoStream.seek(startTime);
 			videoStream.pause();
 		}
 		
 		public function pause():void
 		{
+			this.status = Consts.STATUS_PAUSED;
 			this.onStateChange(Consts.ON_STATE_CHANGE_PAUSED);
+			
 			videoStream.pause();
 		}
 				
