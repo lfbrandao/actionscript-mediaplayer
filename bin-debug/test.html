@@ -3,7 +3,7 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<title>ExternalInterface Test 1</title>
-		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/swfobject/2.1/swfobject.js"></script>
+		<script type="text/javascript" src="swfobject.js"></script>
 		<script type="text/javascript">
 			var flashvars = {};
 			var params = {};
@@ -12,7 +12,7 @@
 			params.allowfullscreen = "true";
 			var attributes = {};
 			attributes.id = "MediaPlayer";
-			swfobject.embedSWF("MediaPlayer.swf", "flashDiv", "320", "240", "9.0.0", false, flashvars, params, attributes);
+			swfobject.embedSWF("MediaPlayer.swf", "flashDiv", "100%", "100%", "9.0.0", false, flashvars, params, attributes);
 		</script>
 		<script type="text/javascript" defer>
 			window.onload = init;
@@ -167,7 +167,9 @@
 			
 			#videoDiv
 			{
-				border: black 5px solid;
+				border: black 0px solid;
+				width: 768px;
+				height: 428px;
 			}
 		</style>
 	</head>
@@ -197,7 +199,7 @@
 				
 				<a onclick="loadMovie()" href="javascript:void(0);">load</a>
 				<br/>
-				Url <input type="text" id="txtUrl" value="http://mediapm.edgesuite.net/ovp/content/demo/video/elephants_dream/elephants_dream_768x428_24.0fps_608kbps.mp4" style="width:400px;"/>
+				Url <input type="text" id="txtUrl" value="/Users/luisbrandao/Desktop/zeega/elephants_dream_768x428_24.0fps_608kbps.mp4" style="width:400px;"/>
 				<br/>
 				Start playing at <input type="text" id="txtVideoStart" value="0"/>
 			</div>

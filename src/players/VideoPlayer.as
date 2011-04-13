@@ -29,7 +29,6 @@ package players
 		private var videoStream:NetStream;		// video streaming object
 		private var video:Video;				// video object
 		
-		
 		private var vidInfoObj:Object;			// array for loading metadata
 		private var eventListeners:Array;		// event listeners list
 		
@@ -46,6 +45,8 @@ package players
 		
 		public function VideoPlayer(width:int, height:int):void
 		{
+			this.log("Video height at constructor :" + height);
+			this.log("Video width at constructor :" + width);
 			this.vidInfoObj = new Object();
 			this.eventListeners = new Array();
 			
@@ -201,6 +202,7 @@ package players
 		
 		public function onMetaData(info:Object):void {
 			var vidInfoObj:Object = info;
+			/*
 			for (var prop:String in vidInfoObj)
 			{
 				
@@ -213,7 +215,8 @@ package players
 						trace(sp);
 					}
 				}
-			}
+			}*/
+			
 			this.endTime = videoStream.bufferTime = vidInfoObj.duration;
 			this.onLoading(Consts.ON_LOADING_METADATA_LOADED);
 		}
@@ -234,7 +237,6 @@ package players
 		
 		public function onLoading(eventId:int):void 
 		{  
-			
 			this.dispatchEvent(new PlayerEvent(PlayerEvent.ON_LOADING, eventId));
 		}
 		

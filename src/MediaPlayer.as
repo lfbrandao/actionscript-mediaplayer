@@ -47,12 +47,6 @@ package
 			
 			this.currentFileURL = "";
 		
-			// create and configure the video player
-			this.videoPlayer = new VideoPlayer(stage.width, stage.height);
-			this.videoPlayer.addEventListener(PlayerEvent.ON_LOADING, onPlayerEvent);
-			this.videoPlayer.addEventListener(PlayerEvent.ON_ERROR, onPlayerEvent);
-			this.videoPlayer.addEventListener(PlayerEvent.ON_STATE_CHANGE, onPlayerEvent);
-			
 			// create and configure the audio player
 			this.audioPlayer = new AudioPlayer();
 			this.audioPlayer.addEventListener(PlayerEvent.ON_LOADING, onPlayerEvent);
@@ -61,10 +55,6 @@ package
 			
 			this.currentPlayer = this.videoPlayer;
 			
-			// add players to the sprite
-			this.addChild(this.videoPlayer);
-			this.addChild(this.audioPlayer);
-			
 			// setup entry point for javascript calls
 			ExternalInterface.addCallback("sendToFlash", playerControl);
 			ExternalInterface.addCallback("getVolume", getVolume);
@@ -72,12 +62,38 @@ package
 			ExternalInterface.addCallback("addEventListener", addListener);
 			ExternalInterface.addCallback("removeEventListener", removeListener);
 			
+			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
+			stage.addEventListener(Event.RESIZE, resizeHandler);
 			
 			this.timeChangeTimer = new Timer(500);
 			this.timeChangeTimer.addEventListener(TimerEvent.TIMER, onTimeChange);
+			
+			// add players to the sprite
+			this.log("Mediaplayer width 1 " + this.stage.stageWidth);
+			this.log("Mediaplayer height 1 " + this.stage.stageHeight);
+			
+			// create and configure the video player
+			this.videoPlayer = new VideoPlayer(stage.stageWidth, stage.stageHeight);
+			this.videoPlayer.addEventListener(PlayerEvent.ON_LOADING, onPlayerEvent);
+			this.videoPlayer.addEventListener(PlayerEvent.ON_ERROR, onPlayerEvent);
+			this.videoPlayer.addEventListener(PlayerEvent.ON_STATE_CHANGE, onPlayerEvent);
+			this.addChild(this.videoPlayer);
+			this.addChild(this.audioPlayer);
+			
+			this.log("Mediaplayer width 2 " + this.stage.stageWidth);
+			this.log("Mediaplayer height 2 " + this.stage.stageHeight);
 		}
+		
+		private function resizeHandler(event:Event):void 
+		{
+			/*trace("stageWidth: "+stage.stageWidth);
+			trace("stageHeight: "+stage.stageHeight);
+			this.x = stage.stageWidth/2;
+			this.y = stage.stageHeight/2;*/
+		}
+
 		
 		private function addListener(eventName:String, listenerName:String):void
 		{
@@ -160,6 +176,7 @@ package
 		private function onPlayerLoaded(event:Event):void
 		{
 			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
+			this.resizeHandler(event);
 		}
 		
 		private function onPlayerEvent(event:PlayerEvent):void
@@ -262,7 +279,7 @@ package
 		
 		// -------- Volume control
 		
-		private var verbose:Boolean = false;
+		private var verbose:Boolean = true;
 		
 		private function log(message:String):void
 		{
