@@ -6,6 +6,7 @@
 		<script type="text/javascript" src="swfobject.js"></script>
 		<script type="text/javascript">
 			var flashvars = {};
+			flashvars.vidId="flashDiv";
 			var params = {};
 			params.allowscriptaccess = "always";
 			params.allownetworking = "all";
@@ -104,11 +105,14 @@
 				flashMovie("MediaPlayer").sendToFlash(action, value);
 			}
 			
+			
 			function loadMovie()
 			{
 				url = document.getElementById("txtUrl").value;
 				startAt = document.getElementById("txtVideoStart").value;
-				value = url + "," + startAt;
+				stopAt = document.getElementById("txtVideoStop").value;
+				
+				value = url + "," + startAt + "," + stopAt;
 				flashMovie("MediaPlayer").sendToFlash("load", value);
 			}
 			
@@ -140,6 +144,9 @@
 			{
 				txtBox = document.getElementById("txtTime");
 				txtBox.value = flashMovie("MediaPlayer").sendToFlash('getEndTime','');
+				vdiv = document.getElementById("videoDiv");
+				/*alert(vdiv.width);*/
+				vdiv.style.width = "300px";
 			}
 
 		</script>
@@ -170,6 +177,15 @@
 				border: black 0px solid;
 				width: 768px;
 				height: 428px;
+				/*width: 320px;
+				height: 240px;*/
+			}
+			
+			#flashDiv
+			{
+				width :100%;
+				height: 100%;
+				
 			}
 		</style>
 	</head>
@@ -202,6 +218,7 @@
 				Url <input type="text" id="txtUrl" value="/Users/luisbrandao/Desktop/zeega/elephants_dream_768x428_24.0fps_608kbps.mp4" style="width:400px;"/>
 				<br/>
 				Start playing at <input type="text" id="txtVideoStart" value="0"/>
+				Stop playing at <input type="text" id="txtVideoStop" value="0"/>
 			</div>
 			
 			<div>

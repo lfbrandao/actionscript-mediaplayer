@@ -3,7 +3,7 @@ package players
 	public interface IPlayer
 	{
 		// load video
-		function load(url:String, startAt:Number = 0.00):void;
+		function load(url:String, startAt:Number = 0.00, stopAt:Number = -1.00):void;
 		
 		// playback control
 		function play():void;

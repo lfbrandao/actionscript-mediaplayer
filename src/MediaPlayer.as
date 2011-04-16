@@ -37,7 +37,9 @@ package
 		private var eventsListeners:Dictionary;
 		
 		private var timeChangeTimer:Timer;
+		private var playerId:String;
 		
+		// onload - id
 		public function MediaPlayer()
 		{
 			this.eventsListeners = new Dictionary();
@@ -55,13 +57,17 @@ package
 			
 			this.currentPlayer = this.videoPlayer;
 			
-			// setup entry point for javascript calls
+			// setup the entry point for javascript calls
 			ExternalInterface.addCallback("sendToFlash", playerControl);
 			ExternalInterface.addCallback("getVolume", getVolume);
 			
 			ExternalInterface.addCallback("addEventListener", addListener);
 			ExternalInterface.addCallback("removeEventListener", removeListener);
 			
+			// set the player id
+			var paramObj:Object = LoaderInfo(this.root.loaderInfo).parameters;
+			this.playerId = paramObj.vidId;
+			this.log("playerId " + this.playerId);
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
@@ -88,10 +94,13 @@ package
 		
 		private function resizeHandler(event:Event):void 
 		{
-			/*trace("stageWidth: "+stage.stageWidth);
+			trace("stageWidth: "+stage.stageWidth);
 			trace("stageHeight: "+stage.stageHeight);
-			this.x = stage.stageWidth/2;
-			this.y = stage.stageHeight/2;*/
+			//this.x = stage.stageWidth/2;
+			//this.y = stage.stageHeight/2;
+			this.videoPlayer.width = stage.stageWidth;
+			this.videoPlayer.height = stage.stageHeight;
+			this.log("RESIZE " + stage.stageWidth + "x" + stage.stageHeight);
 		}
 
 		
@@ -123,7 +132,7 @@ package
 		
 		private function playerControl(action:String, value:String) : Number
 		{
-			//this.log("fromJS " + action + " : " + value);
+			this.log("Player control - value : " + value);
 			if(action == "play")
 			{
 				this.play();
@@ -143,7 +152,8 @@ package
 			{
 				// TO-DO - check params
 				var params:Array = value.split(",");
-				this.load(params[0], params[1]);
+				
+				this.load(params[0], params[1], params[2]);
 			}
 			else if(action == "setVolume")
 			{
@@ -168,8 +178,17 @@ package
 			return -1;
 		}
 		
+		private var lastTime:Number;
+		
 		public function onTimeChange(event:TimerEvent):void
 		{
+			if(lastTime > 0 && lastTime == this.currentPlayer.getCurrentTime())
+			{
+				this.timeChangeTimer.stop();
+				return;
+			}
+			
+			this.lastTime = this.currentPlayer.getCurrentTime();
 			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_STATE_CHANGE, Consts.ON_STATE_CHANGE_TIME, this.currentPlayer.getCurrentTime()));
 		}
 		
@@ -187,7 +206,7 @@ package
 		
 		// -------- Playback control
 		
-		private function load(url:String, startAt:int = 0):void
+		private function load(url:String, startAt:Number = 0.00, stopAt:Number = -1.00):void
 		{
 			var fileType:String = this.getFileType(url);
 			
@@ -201,7 +220,7 @@ package
 					break;
 			}
 			
-			this.currentPlayer.load(url, startAt);
+			this.currentPlayer.load(url, startAt, 5);
 		}
 		
 		private function stop():void
@@ -286,7 +305,7 @@ package
 			if(verbose)
 			{
 				var currentTime:Date = new Date();
-				trace(currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds() + " " + message);
+				trace("MediaPlayer " + currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds() + " " + message);
 			}
 		}
 	}

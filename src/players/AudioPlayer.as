@@ -1,7 +1,8 @@
 package players
 {
-	import events.PlayerEvent;
 	import configuration.Consts;
+	
+	import events.PlayerEvent;
 	
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -29,7 +30,7 @@ package players
 			this.onLoading(Consts.ON_LOADING_MEDIA_LOADED);
 		}
 		
-		public function load(url:String, startAt:Number = 0.00):void
+		public function load(url:String, startAt:Number = 0.00, stopAt:Number = -1.00):void
 		{
 			this.startTime = startAt;
 			this.audioFile.load(new URLRequest(url));

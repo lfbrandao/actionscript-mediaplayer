@@ -40,6 +40,9 @@ package players
 		
 		private var status:String = "";			// player status
 		
+		// hack to stop the video when endTime is reached 
+		private var stopVideoTimer:Timer;
+		private var stopVideoAt:Number;
 		
 		// -------- Constructors
 		
@@ -66,11 +69,15 @@ package players
 			// hack
 			this.timer = new Timer(1); //Set a timer for 1 ms.
 			timer.addEventListener(TimerEvent.TIMER, onTimer);
+			
+			this.stopVideoTimer = new Timer(1);
+			//this.stopVideoTimer.stop();
+			this.stopVideoTimer.addEventListener(TimerEvent.TIMER, onStopVideoTimer);
 		}
 		
 		// -------- Playback control
 		
-		public function load(url:String, startAt:Number = 0.00):void
+		public function load(url:String, startAt:Number = 0.00, stopAt:Number = -1.00):void
 		{
 			this.log("LOAD");
 			this.videoStream.close();
@@ -80,10 +87,15 @@ package players
 			//timer.start();
 			this.videoURL = url;
 			this.log(videoURL);
-			// calling play seems to be the only way to load the video
 			
 			this.startTime = startAt;
 			
+			if(stopAt > -1)
+			{
+				this.stopVideoAt = startAt + stopAt;
+			}
+			
+			// calling play seems to be the only way to load the video
 			this.videoStream.play(videoURL);
 		}
 		
@@ -96,6 +108,8 @@ package players
 			    videoStream.seek(this.startTime);
 			}
 			videoStream.resume();
+			
+			this.stopVideoTimer.start();
 		}
 		
 		public function stop():void
@@ -191,12 +205,26 @@ package players
 			videoStream.client = this;
 		}
 	
+		// -------- Timer events
 		private function onTimer(evt:TimerEvent):void
 		{
 			var percent:Number = Math.round(videoStream.bytesLoaded/videoStream.bytesTotal * 100 );
 			if(percent == 100)
 			{
 				this.timer.stop();
+			}
+		}
+		
+		private function onStopVideoTimer(evt:TimerEvent):void
+		{
+			this.log("onStopVideoTimer " + this.stopVideoAt + " - " + this.videoStream.time); 
+			if(this.endTime > -1)
+			{	
+				if(this.videoStream.time >= this.stopVideoAt)
+				{
+					this.stop();
+					this.stopVideoTimer.stop();
+				}
 			}
 		}
 		
@@ -221,7 +249,6 @@ package players
 			this.onLoading(Consts.ON_LOADING_METADATA_LOADED);
 		}
 		
-		
 		// -------- Event Dispatchers
 		
 		public function onError(eventId:int):void
@@ -242,13 +269,13 @@ package players
 		
 		// -------- Helper methods
 		
-		private var verbose:Boolean = true;
+		private var verbose:Boolean = false;
 		
 		private function log(message:String):void
 		{
 			var currentTime:Date = new Date();
 			
-			trace(currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds() + " " + message);
+			trace("VideoPlayer " + currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds() + " " + message);
 		}
 	}
 }
