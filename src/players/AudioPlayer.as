@@ -63,10 +63,10 @@ package players
 			this.onStateChange(Consts.ON_STATE_CHANGE_STOPPED);
 		}
 		
-		
 		public function getCurrentTime():Number
 		{
-			return (this.soundChannel.position / 10);
+			// http://kb2.adobe.com/cps/155/tn_15542.html
+			return int(Math.round(this.soundChannel.position / 10)) / 100;
 		}
 		
 		public function getStartTime():Number
@@ -76,7 +76,8 @@ package players
 		
 		public function getEndTime():Number
 		{
-			return (this.audioFile.length / 10);
+			//return (this.audioFile.length / 10);
+			return int(Math.round(this.audioFile.length / 10)) / 100;
 		}
 		
 		// -------- Event Dispatchers
@@ -97,6 +98,5 @@ package players
 			
 			this.dispatchEvent(new PlayerEvent(PlayerEvent.ON_LOADING, eventId));
 		}
-		
 	}
 }

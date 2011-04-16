@@ -20,7 +20,7 @@
 			
 			function init()
 			{
-				setTimeout("initEvents()", 1000);
+				//setTimeout("initEvents()", 1);
 			}
 			
 			function initEvents()
@@ -28,6 +28,7 @@
 				flashMovie("MediaPlayer").addEventListener("onStateChange", "onPlayerStateChange");
 				flashMovie("MediaPlayer").addEventListener("onLoading", "onPlayerLoading");
 				flashMovie("MediaPlayer").addEventListener("onError", "onPlayerError");
+				
 			}
 		
 			function flashMovie(movieName)
@@ -35,7 +36,13 @@
 				return document[movieName];
          	}
 
-			function onPlayerStateChange(playerId, eventid, eventvalue)
+			function onPlayerLoaded()
+			{
+				logger = document.getElementById("logger");
+				logger.value += "player loaded \n";
+			}
+
+			function onStateChange(playerId, eventid, eventvalue)
 			{
 				logger = document.getElementById("logger");
 				logger.value += playerId + " ";
@@ -62,7 +69,7 @@
 				}
 			}
 			
-			function onPlayerLoading(playerId, value)
+			function onLoading(playerId, value)
 			{
 				logger = document.getElementById("logger");
 				logger.value += playerId + " ";
@@ -84,7 +91,7 @@
 				}
 			}
 			
-			function onPlayerError(playerId, value)
+			function onError(playerId, value)
 			{
 				logger = document.getElementById("logger");
 				logger.value += playerId + " ";

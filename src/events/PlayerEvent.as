@@ -7,6 +7,7 @@ package events
 		public static const ON_ERROR:String = "onError";
 		public static const ON_LOADING:String = "onLoading";
 		public static const ON_STATE_CHANGE:String = "onStateChange";
+		public static const ON_PLAYER_LOADED:String = "onPlayerLoaded";
 		
 		public var eventId:int;
 		public var eventValue:Number;

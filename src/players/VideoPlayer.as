@@ -48,8 +48,6 @@ package players
 		
 		public function VideoPlayer(width:int, height:int):void
 		{
-			this.log("Video height at constructor :" + height);
-			this.log("Video width at constructor :" + width);
 			this.vidInfoObj = new Object();
 			this.eventListeners = new Array();
 			
@@ -71,7 +69,6 @@ package players
 			timer.addEventListener(TimerEvent.TIMER, onTimer);
 			
 			this.stopVideoTimer = new Timer(1);
-			//this.stopVideoTimer.stop();
 			this.stopVideoTimer.addEventListener(TimerEvent.TIMER, onStopVideoTimer);
 		}
 		

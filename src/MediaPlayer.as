@@ -44,9 +44,6 @@ package
 		{
 			this.eventsListeners = new Dictionary();
 			
-			// notify listeners that the player is loaded
-			this.loaderInfo.addEventListener(Event.COMPLETE, onPlayerLoaded);
-			
 			this.currentFileURL = "";
 		
 			// create and configure the audio player
@@ -90,31 +87,18 @@ package
 			
 			this.log("Mediaplayer width 2 " + this.stage.stageWidth);
 			this.log("Mediaplayer height 2 " + this.stage.stageHeight);
+			
+			// notify listeners that the player is loaded
+			this.loaderInfo.addEventListener(Event.COMPLETE, onPlayerLoaded);
 		}
 		
 		private function resizeHandler(event:Event):void 
 		{
-			trace("stageWidth: "+stage.stageWidth);
-			trace("stageHeight: "+stage.stageHeight);
-			//this.x = stage.stageWidth/2;
-			//this.y = stage.stageHeight/2;
-			
-			/*
-			this.videoPlayer.width = stage.stageWidth;
-			this.videoPlayer.height = stage.stageHeight;
-			*/
-			
 			var stageAspectRatio:Number = stage.stageWidth / stage.stageHeight;
 			var videoAspectRatio:Number = this.videoPlayer.width / this.videoPlayer.height; 
 			
 			var widthRatio:Number = stage.stageWidth / this.videoPlayer.width;
 			var heightRatio:Number = stage.stageHeight / this.videoPlayer.height;
-			
-			this.log("widthRatio:" + widthRatio);
-			this.log("heightRatio:" + heightRatio);
-			
-			this.log("Stage aspect ratio:" + stageAspectRatio);
-			this.log("Video aspect ratio:" + videoAspectRatio);
 			
 			if(widthRatio != 1 || heightRatio != 1)
 			{
@@ -146,10 +130,6 @@ package
 				this.videoPlayer.x = Math.abs(this.videoPlayer.width - stage.stageWidth) / 2;
 				this.videoPlayer.y = Math.abs(this.videoPlayer.height - stage.stageHeight) / 2;
 			}
-			
-			this.log("RESIZE - Stage Size " + stage.stageWidth + "x" + stage.stageHeight);
-			this.log("RESIZE - Stage Size 2" + stage.width + "x" + stage.height);
-			this.log("RESIZE - Videoplayer Size " + stage.stageWidth + "x" + stage.stageHeight);
 		}
 		
 		private function addListener(eventName:String, listenerName:String):void
@@ -242,8 +222,9 @@ package
 		
 		private function onPlayerLoaded(event:Event):void
 		{
-			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
-			this.resizeHandler(event);
+			//this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
+			//this.resizeHandler(event);
+			this.callJavascriptFunction("onPlayerLoaded");
 		}
 		
 		private function onPlayerEvent(event:PlayerEvent):void
@@ -266,8 +247,12 @@ package
 					this.currentPlayer = videoPlayer;
 					break;
 			}
+			if(stopAt == 0)
+			{
+				stopAt = -1;
+			}
 			
-			this.currentPlayer.load(url, startAt, 5);
+			this.currentPlayer.load(url, startAt, stopAt);
 		}
 		
 		private function stop():void
@@ -318,30 +303,29 @@ package
 			}
 		}
 		
+		private function callJavascriptFunction(functionName:String) : void
+		{
+			if(ExternalInterface.available)  
+			{
+				ExternalInterface.call(functionName);
+			}
+		}
+		
 		private function dispatchEventToJavascript(eventName:String, eventId:int, eventValue:Number = 0.00) : void  
 		{  
 			// TO-DO if not available?
 			if(ExternalInterface.available)  
 			{
-				if(this.eventsListeners[eventName] != null)
+				if(eventName == Consts.ON_STATE_CHANGE)
 				{
-					var listeners:Array = this.eventsListeners[eventName] as Array;
-					
-					for(var i:int = 0; i < listeners.length; i++)
-					{
-						if(eventName == Consts.ON_STATE_CHANGE)
-						{
-							ExternalInterface.call(listeners[i], playerId, eventId, eventValue);
-						}
-						else
-						{
-							ExternalInterface.call(listeners[i], playerId, eventId);
-						}
-					}
+					ExternalInterface.call(eventName, playerId, eventId, eventValue);
+				}
+				else
+				{
+					ExternalInterface.call(eventName, playerId, eventId);
 				}
 			}  
 		}
-		
 		
 		// -------- Volume control
 		
