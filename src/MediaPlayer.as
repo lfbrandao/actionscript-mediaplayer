@@ -39,7 +39,6 @@ package
 		private var timeChangeTimer:Timer;
 		private var playerId:String;
 		
-		// onload - id
 		public function MediaPlayer()
 		{
 			this.eventsListeners = new Dictionary();
@@ -52,46 +51,47 @@ package
 			this.audioPlayer.addEventListener(PlayerEvent.ON_ERROR, onPlayerEvent);
 			this.audioPlayer.addEventListener(PlayerEvent.ON_STATE_CHANGE, onPlayerEvent);
 			
-			this.currentPlayer = this.videoPlayer;
-			
 			// setup the entry point for javascript calls
 			ExternalInterface.addCallback("sendToFlash", playerControl);
 			ExternalInterface.addCallback("getVolume", getVolume);
-			
-			ExternalInterface.addCallback("addEventListener", addListener);
-			ExternalInterface.addCallback("removeEventListener", removeListener);
 			
 			// set the player id
 			var paramObj:Object = LoaderInfo(this.root.loaderInfo).parameters;
 			this.playerId = paramObj.vidId;
 			this.log("playerId " + this.playerId);
 			
+			// setup the stage scale mode to trigger the resize event and configure the event
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			stage.addEventListener(Event.RESIZE, resizeHandler);
 			
+			// timer for video playback progress
 			this.timeChangeTimer = new Timer(500);
 			this.timeChangeTimer.addEventListener(TimerEvent.TIMER, onTimeChange);
-			
-			// add players to the sprite
-			this.log("Mediaplayer width 1 " + this.stage.stageWidth);
-			this.log("Mediaplayer height 1 " + this.stage.stageHeight);
 			
 			// create and configure the video player
 			this.videoPlayer = new VideoPlayer(stage.stageWidth, stage.stageHeight);
 			this.videoPlayer.addEventListener(PlayerEvent.ON_LOADING, onPlayerEvent);
 			this.videoPlayer.addEventListener(PlayerEvent.ON_ERROR, onPlayerEvent);
 			this.videoPlayer.addEventListener(PlayerEvent.ON_STATE_CHANGE, onPlayerEvent);
+			
+			// the video player is the default player
+			this.currentPlayer = this.videoPlayer;
+			
+			// add both players to the container
 			this.addChild(this.videoPlayer);
 			this.addChild(this.audioPlayer);
-			
-			this.log("Mediaplayer width 2 " + this.stage.stageWidth);
-			this.log("Mediaplayer height 2 " + this.stage.stageHeight);
 			
 			// notify listeners that the player is loaded
 			this.loaderInfo.addEventListener(Event.COMPLETE, onPlayerLoaded);
 		}
 		
+		/**
+		 * Stage resize event listener. Adjusts the video player size to fit in
+		 * the stage.
+		 *
+		 * @event Stage resize event.
+		 */
 		private function resizeHandler(event:Event):void 
 		{
 			var stageAspectRatio:Number = stage.stageWidth / stage.stageHeight;
@@ -132,35 +132,45 @@ package
 			}
 		}
 		
-		private function addListener(eventName:String, listenerName:String):void
+		private var lastTime:Number;
+		
+		// -------- Event Dispatchers
+		
+		private function onTimeChange(event:TimerEvent):void
 		{
-			this.log("addListener " + eventName);
-			// TO-DO - try/ catch, check if listener name is correct, avoid cast
-			if(this.eventsListeners[eventName] == null)
+			if(lastTime > 0 && lastTime == this.currentPlayer.getCurrentTime())
 			{
-				this.log("addListener new");
-				this.eventsListeners[eventName] = new Array();
+				this.timeChangeTimer.stop();
+				return;
 			}
-			(this.eventsListeners[eventName] as Array).push(listenerName);
+			
+			this.lastTime = this.currentPlayer.getCurrentTime();
+			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_STATE_CHANGE, Consts.ON_STATE_CHANGE_TIME, this.currentPlayer.getCurrentTime()));
 		}
 		
-		private function removeListener(eventName:String, listenerName:String):void
+		private function onPlayerLoaded(event:Event):void
 		{
-			if(this.eventsListeners[eventName] != null)
-			{
-				var listeners:Array = this.eventsListeners[eventName] as Array;
-				var listenerIndex:int = listeners.indexOf(listenerName); 
-				
-				if(listenerIndex > -1)
-				{
-					this.eventsListeners[eventName] = listeners.splice(listenerIndex,1);
-				}
-			}	
+			//this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
+			//this.resizeHandler(event);
+			this.callJavascriptFunction("onPlayerLoaded", this.playerId);
 		}
 		
-		private function playerControl(action:String, value:String) : Number
+		private function onPlayerEvent(event:PlayerEvent):void
 		{
-			this.log("Player control - value : " + value);
+			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
+		}
+		
+		// -------- Playback control
+		
+		/**
+		 * Player playback control function. Plays, pauses, (...) the player.
+		 *
+		 * @param action Action (play, pause, etc) to perform.
+		 * @param value Action configuration values.
+		 *
+		 */
+		public function playerControl(action:String, value:String) : Number
+		{
 			if(action == "play")
 			{
 				this.play();
@@ -205,34 +215,6 @@ package
 			
 			return -1;
 		}
-		
-		private var lastTime:Number;
-		
-		public function onTimeChange(event:TimerEvent):void
-		{
-			if(lastTime > 0 && lastTime == this.currentPlayer.getCurrentTime())
-			{
-				this.timeChangeTimer.stop();
-				return;
-			}
-			
-			this.lastTime = this.currentPlayer.getCurrentTime();
-			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_STATE_CHANGE, Consts.ON_STATE_CHANGE_TIME, this.currentPlayer.getCurrentTime()));
-		}
-		
-		private function onPlayerLoaded(event:Event):void
-		{
-			//this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
-			//this.resizeHandler(event);
-			this.callJavascriptFunction("onPlayerLoaded");
-		}
-		
-		private function onPlayerEvent(event:PlayerEvent):void
-		{
-			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
-		}
-		
-		// -------- Playback control
 		
 		private function load(url:String, startAt:Number = 0.00, stopAt:Number = -1.00):void
 		{
@@ -288,7 +270,7 @@ package
 		
 		// -------- Media type (audio/video)
 		
-		private function getFileType(url:String)
+		private function getFileType(url:String):String
 		{
 			var fileExtensionSeparatorIndex:Number = url.lastIndexOf('.');
 			var fileExtension:String = url.substr(fileExtensionSeparatorIndex + 1, url.length).toLowerCase();
@@ -303,11 +285,13 @@ package
 			}
 		}
 		
-		private function callJavascriptFunction(functionName:String) : void
+		// -------- Call Javascript Functions
+		
+		private function callJavascriptFunction(functionName:String, functionValue:String) : void
 		{
 			if(ExternalInterface.available)  
 			{
-				ExternalInterface.call(functionName);
+				ExternalInterface.call(functionName, functionValue);
 			}
 		}
 		
@@ -327,7 +311,7 @@ package
 			}  
 		}
 		
-		// -------- Volume control
+		// -------- Helpers
 		
 		private var verbose:Boolean = true;
 		

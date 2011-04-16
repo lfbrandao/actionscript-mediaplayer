@@ -36,9 +36,10 @@
 				return document[movieName];
          	}
 
-			function onPlayerLoaded()
+			function onPlayerLoaded(playerId)
 			{
 				logger = document.getElementById("logger");
+				logger.value += playerId;
 				logger.value += "player loaded \n";
 			}
 
