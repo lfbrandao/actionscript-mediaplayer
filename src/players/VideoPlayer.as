@@ -227,10 +227,9 @@ package players
 		
 		public function onMetaData(info:Object):void {
 			var vidInfoObj:Object = info;
-			/*
+			
 			for (var prop:String in vidInfoObj)
 			{
-				
 				if(prop == "seekpoints")
 				{
 					trace(prop);
@@ -240,7 +239,12 @@ package players
 						trace(sp);
 					}
 				}
-			}*/
+			}
+			
+			this.video.width = vidInfoObj.width;
+			this.video.height = vidInfoObj.height;
+			this.log("onMetaData width " + vidInfoObj.width);
+			this.log("onMetaData height " + vidInfoObj.height);
 			
 			this.endTime = videoStream.bufferTime = vidInfoObj.duration;
 			this.onLoading(Consts.ON_LOADING_METADATA_LOADED);

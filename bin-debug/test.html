@@ -164,11 +164,15 @@
 			
 			function changeFlashSize()
 			{
-				vdiv = document.getElementById("videoDiv");
+				
+				//vdiv = document.getElementById("videoDiv");
 				vdivWidth = document.getElementById("videoDivWidth").value;
 				vdivHeight = document.getElementById("videoDivHeight").value;
-				vdiv.style.width = vdivWidth;
-				vdiv.style.height = vdivHeight;
+				//vdiv.style.width = vdivWidth;
+				//vdiv.style.height = vdivHeight;*/
+				value = vdivWidth + "," + vdivHeight;
+				//alert('resize' + value);
+				flashMovie("MediaPlayer").sendToFlash('resize',value);
 			}
 
 		</script>
@@ -197,8 +201,8 @@
 			#videoDiv
 			{
 				border: black 0px solid;
-				width: 768px;
-				height: 428px;
+				width: 840px;
+				height: 630px;
 				/*width: 320px;
 				height: 240px;*/
 			}
@@ -238,7 +242,7 @@
 				
 				<a onclick="loadMovie()" href="javascript:void(0);">load</a>
 				<br/>
-				Url <input type="text" id="txtUrl" value="/Users/luisbrandao/Desktop/zeega/elephants_dream_768x428_24.0fps_608kbps.mp4" style="width:400px;"/>
+				Url <input type="text" id="txtUrl" value="/Users/luisbrandao/Desktop/zeega/WildBillDays.mov" style="width:400px;"/>
 				<br/>
 				Start playing at <input type="text" id="txtVideoStart" value="0"/>
 				Stop playing at <input type="text" id="txtVideoStop" value="0"/><br/>

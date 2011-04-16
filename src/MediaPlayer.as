@@ -37,10 +37,15 @@ package
 		private var timeChangeTimer:Timer;		// media playback progress timer
 		private var lastTime:Number;			// 
 		
+		private var verbose:Boolean = false;		// enable / disable logging
+		
 		// -------- Constructor
 		
 		public function MediaPlayer()
 		{
+			this.cacheAsBitmap = true; 
+			this.opaqueBackground = 0x000000;
+			
 			this.currentFileURL = "";
 		
 			// create and configure the audio player
@@ -83,6 +88,7 @@ package
 			// notify listeners that the player is loaded
 			this.loaderInfo.addEventListener(Event.COMPLETE, onPlayerLoaded);
 		}
+		
 		
 		// -------- Playback control
 		
@@ -135,6 +141,12 @@ package
 				this.log("time " + this.currentPlayer.getCurrentTime());
 				return this.currentPlayer.getEndTime();
 			}
+			else if(action == "resize")
+			{
+				this.log("RESIZE");
+				var params:Array = value.split(",");
+				this.resizePlayer(params[0], params[1]);
+			}
 			
 			return -1;
 		}
@@ -166,6 +178,7 @@ package
 			}
 			
 			this.currentPlayer.load(url, startAt, stopAt);
+			//this.resizePlayer(stage.stageWidth, stage.stageHeight);
 		}
 		
 		/**
@@ -189,15 +202,17 @@ package
 		 */
 		private function play():void
 		{
-			if(this.currentFileURL == "")
+			/*if(this.currentFileURL == "")
 			{
 				this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_ERROR, Consts.ON_ERROR_NO_FILE_LOADED));
 			}
 			else
 			{
-				this.currentPlayer.play();
-				this.timeChangeTimer.start();
+			
 			}
+			*/
+			this.currentPlayer.play();
+			this.timeChangeTimer.start();
 		}
 		
 		
@@ -211,6 +226,8 @@ package
 		 */
 		private function onStageResize(event:Event):void 
 		{
+			this.resizePlayer(stage.stageWidth, stage.stageHeight);
+			/*
 			var stageAspectRatio:Number = stage.stageWidth / stage.stageHeight;
 			var videoAspectRatio:Number = this.videoPlayer.width / this.videoPlayer.height; 
 			
@@ -246,8 +263,64 @@ package
 				
 				this.videoPlayer.x = Math.abs(this.videoPlayer.width - stage.stageWidth) / 2;
 				this.videoPlayer.y = Math.abs(this.videoPlayer.height - stage.stageHeight) / 2;
-			}
+			}*/
 		}
+		
+		private function resizePlayer(canvasWidth:Number, canvasHeight:Number):void 
+		{
+			this.log("Resize player start");
+			this.log("Stage size " + stage.width + " - " + stage.height);
+			this.log("Stage size2 " + stage.stageWidth + " - " + stage.stageHeight);
+			this.log("Video player size " + videoPlayer.width + " - " + videoPlayer.height);
+			
+			this.log("Updating video size...");
+			
+			var stageAspectRatio:Number = canvasWidth / canvasHeight;
+			var videoAspectRatio:Number = this.videoPlayer.width / this.videoPlayer.height; 
+			
+			var widthRatio:Number = canvasWidth / this.videoPlayer.width;
+			var heightRatio:Number = canvasHeight / this.videoPlayer.height;
+			
+			this.log("Width / height ratio " + widthRatio + " - " + heightRatio);
+			
+			if(widthRatio != 1 || heightRatio != 1)
+			{
+				if(heightRatio > widthRatio)
+				{
+					this.videoPlayer.width = canvasWidth;
+					if (stageAspectRatio >= videoAspectRatio)
+					{
+						this.videoPlayer.height = canvasWidth * videoAspectRatio;
+					}
+					else
+					{
+						this.videoPlayer.height = canvasWidth / videoAspectRatio;
+					}
+				}
+				else
+				{
+					if (stageAspectRatio >= videoAspectRatio)
+					{
+						this.videoPlayer.width = canvasHeight * videoAspectRatio;
+					}
+					else
+					{
+						this.videoPlayer.width = canvasHeight / videoAspectRatio;
+					}
+					this.videoPlayer.height = canvasHeight;
+				}
+				
+				this.videoPlayer.x = Math.abs(this.videoPlayer.width - canvasWidth) / 2;
+				this.videoPlayer.y = Math.abs(this.videoPlayer.height - canvasHeight) / 2;
+			}
+			
+			this.log("Stage size " + stage.width + " - " + stage.height);
+			this.log("Stage size2 " + stage.stageWidth + " - " + stage.stageHeight);
+			this.log("Video player size " + videoPlayer.width + " - " + videoPlayer.height);
+			
+			this.log("Resize player ended");
+		}
+		
 		
 		// -------- Event Dispatchers
 		
@@ -266,12 +339,18 @@ package
 		private function onPlayerLoaded(event:Event):void
 		{
 			//this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
-			//this.resizeHandler(event);
+			this.log("Player Loaded");
+			// this.onStageResize(event);
 			this.callJavascriptFunction("onPlayerLoaded", this.playerId);
 		}
 		
 		private function onPlayerEvent(event:PlayerEvent):void
 		{
+			if(event.type == PlayerEvent.ON_LOADING && event.eventId == Consts.ON_LOADING_METADATA_LOADED)
+			{
+				this.resizePlayer(stage.stageWidth, stage.stageHeight);	
+			}
+			
 			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
 		}
 		
@@ -280,34 +359,14 @@ package
 		
 		public function getVolume():Number
 		{
-			// TO-DO - avoid cast + error handling 
 			return SoundMixer.soundTransform.volume;
 		}
 		
 		public function setVolume(value:Number):void
 		{
-			/*this.videoPlayer.soundTransform = new SoundTransform(value);
-			this.log("in " + SoundMixer.areSoundsInaccessible());*/
-			this.log("volume " + value);
 			SoundMixer.soundTransform = new SoundTransform(value);
 		}
 		
-		// -------- Media type (audio/video)
-		
-		private function getFileType(url:String):String
-		{
-			var fileExtensionSeparatorIndex:Number = url.lastIndexOf('.');
-			var fileExtension:String = url.substr(fileExtensionSeparatorIndex + 1, url.length).toLowerCase();
-			
-			if(fileExtension == "mp3")
-			{
-				return "mp3";
-			}
-			else
-			{
-				return "video";
-			}
-		}
 		
 		// -------- Call Javascript Functions
 		
@@ -335,9 +394,23 @@ package
 			}  
 		}
 		
+		
 		// -------- Helpers
 		
-		private var verbose:Boolean = true;
+		private function getFileType(url:String):String
+		{
+			var fileExtensionSeparatorIndex:Number = url.lastIndexOf('.');
+			var fileExtension:String = url.substr(fileExtensionSeparatorIndex + 1, url.length).toLowerCase();
+			
+			if(fileExtension == "mp3")
+			{
+				return "mp3";
+			}
+			else
+			{
+				return "video";
+			}
+		}
 		
 		private function log(message:String):void
 		{
