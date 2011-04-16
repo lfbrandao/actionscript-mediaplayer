@@ -22,6 +22,7 @@ package configuration
 		
 		public static const ON_ERROR_FAILED_TO_LOAD:int = 1;
 		public static const ON_ERROR_FILE_NOT_SUPPORTED:int = 2;
+		public static const ON_ERROR_NO_FILE_LOADED:int = 3;
 		
 		public static const ON_LOADING:String = "onLoading";
 		public static const ON_STATE_CHANGE:String = "onStateChange";

@@ -22,27 +22,25 @@ package
 	
 	public class MediaPlayer extends Sprite
 	{
-		private var videoPlayer:VideoPlayer;
-		private var audioPlayer:AudioPlayer;
-		private var currentFileURL:String;
-		
-		private var currentPlayer:IPlayer;
-		
-		private var status:String;
-		
 		private static const STATUS_CAN_PLAY:String = "canPlay";
 		private static const STATUS_PAUSED:String = "pause";
 		private static const STATUS_STOPPED:String = "stopped";
 		
-		private var eventsListeners:Dictionary;
+		private var videoPlayer:VideoPlayer; 	// video player
+		private var audioPlayer:AudioPlayer; 	// audio player
 		
-		private var timeChangeTimer:Timer;
-		private var playerId:String;
+		private var currentFileURL:String; 		// url of the current media
+		private var currentPlayer:IPlayer; 		// reference to player in use
+		private var status:String; 				// player status
+		private var playerId:String; 			// player id
+		
+		private var timeChangeTimer:Timer;		// media playback progress timer
+		private var lastTime:Number;			// 
+		
+		// -------- Constructor
 		
 		public function MediaPlayer()
 		{
-			this.eventsListeners = new Dictionary();
-			
 			this.currentFileURL = "";
 		
 			// create and configure the audio player
@@ -63,7 +61,7 @@ package
 			// setup the stage scale mode to trigger the resize event and configure the event
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
-			stage.addEventListener(Event.RESIZE, resizeHandler);
+			stage.addEventListener(Event.RESIZE, onStageResize);
 			
 			// timer for video playback progress
 			this.timeChangeTimer = new Timer(500);
@@ -86,80 +84,6 @@ package
 			this.loaderInfo.addEventListener(Event.COMPLETE, onPlayerLoaded);
 		}
 		
-		/**
-		 * Stage resize event listener. Adjusts the video player size to fit in
-		 * the stage.
-		 *
-		 * @event Stage resize event.
-		 */
-		private function resizeHandler(event:Event):void 
-		{
-			var stageAspectRatio:Number = stage.stageWidth / stage.stageHeight;
-			var videoAspectRatio:Number = this.videoPlayer.width / this.videoPlayer.height; 
-			
-			var widthRatio:Number = stage.stageWidth / this.videoPlayer.width;
-			var heightRatio:Number = stage.stageHeight / this.videoPlayer.height;
-			
-			if(widthRatio != 1 || heightRatio != 1)
-			{
-				if(heightRatio > widthRatio)
-				{
-				 	this.videoPlayer.width = stage.stageWidth;
-					if (stageAspectRatio > videoAspectRatio)
-					{
-				 		this.videoPlayer.height = stage.stageWidth * videoAspectRatio;
-					}
-					else
-					{
-						this.videoPlayer.height = stage.stageWidth / videoAspectRatio;
-					}
-				}
-				else
-				{
-					if (stageAspectRatio > videoAspectRatio)
-					{
-						this.videoPlayer.width = stage.stageHeight * videoAspectRatio;
-					}
-					else
-					{
-						this.videoPlayer.width = stage.stageHeight / videoAspectRatio;
-					}
-					this.videoPlayer.height = stage.stageHeight;
-				}
-				
-				this.videoPlayer.x = Math.abs(this.videoPlayer.width - stage.stageWidth) / 2;
-				this.videoPlayer.y = Math.abs(this.videoPlayer.height - stage.stageHeight) / 2;
-			}
-		}
-		
-		private var lastTime:Number;
-		
-		// -------- Event Dispatchers
-		
-		private function onTimeChange(event:TimerEvent):void
-		{
-			if(lastTime > 0 && lastTime == this.currentPlayer.getCurrentTime())
-			{
-				this.timeChangeTimer.stop();
-				return;
-			}
-			
-			this.lastTime = this.currentPlayer.getCurrentTime();
-			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_STATE_CHANGE, Consts.ON_STATE_CHANGE_TIME, this.currentPlayer.getCurrentTime()));
-		}
-		
-		private function onPlayerLoaded(event:Event):void
-		{
-			//this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
-			//this.resizeHandler(event);
-			this.callJavascriptFunction("onPlayerLoaded", this.playerId);
-		}
-		
-		private function onPlayerEvent(event:PlayerEvent):void
-		{
-			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
-		}
-		
 		// -------- Playback control
 		
 		/**
@@ -174,7 +98,6 @@ package
 			if(action == "play")
 			{
 				this.play();
-				this.timeChangeTimer.start();
 			}
 			else if(action == "stop")
 			{
@@ -216,6 +139,14 @@ package
 			return -1;
 		}
 		
+		/**
+		 * Loads a video or audio file.
+		 *
+		 * @param url File url
+		 * @param startAt Start playing the video / audio at this time (in seconds). Optional parameter with 0 (beginning of file) as default value.
+		 * @param stopAt Stop playing the video / audio after this time (in seconds). Optional parameter with -1 (end of file) as default value. 
+		 *
+		 */
 		private function load(url:String, startAt:Number = 0.00, stopAt:Number = -1.00):void
 		{
 			var fileType:String = this.getFileType(url);
@@ -237,20 +168,113 @@ package
 			this.currentPlayer.load(url, startAt, stopAt);
 		}
 		
+		/**
+		 * Stops the video or audio playback. Subsequent calls to play will play the video from the beginning.
+		 */
 		private function stop():void
 		{
 			this.currentPlayer.stop();
 		}
 		
+		/**
+		 * Pauses the video or audio playback.
+		 */
 		private function pause():void
 		{
 			this.currentPlayer.pause();
 		}
 		
+		/**
+		 * Plays the latest video or audio loaded. If there is no file loaded the error event is triggered.
+		 */
 		private function play():void
 		{
-			this.currentPlayer.play();
+			if(this.currentFileURL == "")
+			{
+				this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_ERROR, Consts.ON_ERROR_NO_FILE_LOADED));
+			}
+			else
+			{
+				this.currentPlayer.play();
+				this.timeChangeTimer.start();
+			}
 		}
+		
+		
+		// -------- Internal events
+		
+		/**
+		 * Stage resize event listener. Adjusts the video player size to fit in
+		 * the stage.
+		 *
+		 * @event Stage resize event.
+		 */
+		private function onStageResize(event:Event):void 
+		{
+			var stageAspectRatio:Number = stage.stageWidth / stage.stageHeight;
+			var videoAspectRatio:Number = this.videoPlayer.width / this.videoPlayer.height; 
+			
+			var widthRatio:Number = stage.stageWidth / this.videoPlayer.width;
+			var heightRatio:Number = stage.stageHeight / this.videoPlayer.height;
+			
+			if(widthRatio != 1 || heightRatio != 1)
+			{
+				if(heightRatio > widthRatio)
+				{
+				 	this.videoPlayer.width = stage.stageWidth;
+					if (stageAspectRatio > videoAspectRatio)
+					{
+				 		this.videoPlayer.height = stage.stageWidth * videoAspectRatio;
+					}
+					else
+					{
+						this.videoPlayer.height = stage.stageWidth / videoAspectRatio;
+					}
+				}
+				else
+				{
+					if (stageAspectRatio > videoAspectRatio)
+					{
+						this.videoPlayer.width = stage.stageHeight * videoAspectRatio;
+					}
+					else
+					{
+						this.videoPlayer.width = stage.stageHeight / videoAspectRatio;
+					}
+					this.videoPlayer.height = stage.stageHeight;
+				}
+				
+				this.videoPlayer.x = Math.abs(this.videoPlayer.width - stage.stageWidth) / 2;
+				this.videoPlayer.y = Math.abs(this.videoPlayer.height - stage.stageHeight) / 2;
+			}
+		}
+		
+		// -------- Event Dispatchers
+		
+		private function onTimeChange(event:TimerEvent):void
+		{
+			if(lastTime > 0 && lastTime == this.currentPlayer.getCurrentTime())
+			{
+				this.timeChangeTimer.stop();
+				return;
+			}
+			
+			this.lastTime = this.currentPlayer.getCurrentTime();
+			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_STATE_CHANGE, Consts.ON_STATE_CHANGE_TIME, this.currentPlayer.getCurrentTime()));
+		}
+		
+		private function onPlayerLoaded(event:Event):void
+		{
+			//this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
+			//this.resizeHandler(event);
+			this.callJavascriptFunction("onPlayerLoaded", this.playerId);
+		}
+		
+		private function onPlayerEvent(event:PlayerEvent):void
+		{
+			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
+		}
+		
 		
 		// -------- Volume control
 		
