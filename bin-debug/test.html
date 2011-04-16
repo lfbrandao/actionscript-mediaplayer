@@ -6,7 +6,7 @@
 		<script type="text/javascript" src="swfobject.js"></script>
 		<script type="text/javascript">
 			var flashvars = {};
-			flashvars.vidId="flashDiv";
+			flashvars.vidId="player1";
 			var params = {};
 			params.allowscriptaccess = "always";
 			params.allownetworking = "all";
@@ -35,10 +35,10 @@
 				return document[movieName];
          	}
 
-			function onPlayerStateChange(eventid, eventvalue)
+			function onPlayerStateChange(playerId, eventid, eventvalue)
 			{
 				logger = document.getElementById("logger");
-				
+				logger.value += playerId + " ";
 				switch(eventid)
 				{
 					case 1: // play begun
@@ -62,9 +62,10 @@
 				}
 			}
 			
-			function onPlayerLoading(value)
+			function onPlayerLoading(playerId, value)
 			{
 				logger = document.getElementById("logger");
+				logger.value += playerId + " ";
 				
 				switch(value)
 				{
@@ -83,9 +84,10 @@
 				}
 			}
 			
-			function onPlayerError(value)
+			function onPlayerError(playerId, value)
 			{
 				logger = document.getElementById("logger");
+				logger.value += playerId + " ";
 				
 				switch(value)
 				{
@@ -145,8 +147,17 @@
 				txtBox = document.getElementById("txtTime");
 				txtBox.value = flashMovie("MediaPlayer").sendToFlash('getEndTime','');
 				vdiv = document.getElementById("videoDiv");
-				/*alert(vdiv.width);*/
-				vdiv.style.width = "300px";
+				vdiv.style.width = "320px";
+				vdiv.style.height = "240px";
+			}
+			
+			function changeFlashSize()
+			{
+				vdiv = document.getElementById("videoDiv");
+				vdivWidth = document.getElementById("videoDivWidth").value;
+				vdivHeight = document.getElementById("videoDivHeight").value;
+				vdiv.style.width = vdivWidth;
+				vdiv.style.height = vdivHeight;
 			}
 
 		</script>
@@ -210,6 +221,7 @@
 		
 		<div id="testArea">
         	<form name="myForm">
+	
         	<div>
 				<h1>Load video</h1>
 				
@@ -218,7 +230,11 @@
 				Url <input type="text" id="txtUrl" value="/Users/luisbrandao/Desktop/zeega/elephants_dream_768x428_24.0fps_608kbps.mp4" style="width:400px;"/>
 				<br/>
 				Start playing at <input type="text" id="txtVideoStart" value="0"/>
-				Stop playing at <input type="text" id="txtVideoStop" value="0"/>
+				Stop playing at <input type="text" id="txtVideoStop" value="0"/><br/>
+				<a onclick="changeFlashSize()" href="javascript:void(0);">Change size</a>
+					W<input type="text" id="videoDivWidth" value="0"/>
+					H<input type="text" id="videoDivHeight" value="0"/>
+					
 			</div>
 			
 			<div>

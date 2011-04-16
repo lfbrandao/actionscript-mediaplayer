@@ -217,7 +217,7 @@ package players
 		
 		private function onStopVideoTimer(evt:TimerEvent):void
 		{
-			this.log("onStopVideoTimer " + this.stopVideoAt + " - " + this.videoStream.time); 
+			// this.log("onStopVideoTimer " + this.stopVideoAt + " - " + this.videoStream.time); 
 			if(this.endTime > -1)
 			{	
 				if(this.videoStream.time >= this.stopVideoAt)

@@ -98,11 +98,59 @@ package
 			trace("stageHeight: "+stage.stageHeight);
 			//this.x = stage.stageWidth/2;
 			//this.y = stage.stageHeight/2;
+			
+			/*
 			this.videoPlayer.width = stage.stageWidth;
 			this.videoPlayer.height = stage.stageHeight;
-			this.log("RESIZE " + stage.stageWidth + "x" + stage.stageHeight);
+			*/
+			
+			var stageAspectRatio:Number = stage.stageWidth / stage.stageHeight;
+			var videoAspectRatio:Number = this.videoPlayer.width / this.videoPlayer.height; 
+			
+			var widthRatio:Number = stage.stageWidth / this.videoPlayer.width;
+			var heightRatio:Number = stage.stageHeight / this.videoPlayer.height;
+			
+			this.log("widthRatio:" + widthRatio);
+			this.log("heightRatio:" + heightRatio);
+			
+			this.log("Stage aspect ratio:" + stageAspectRatio);
+			this.log("Video aspect ratio:" + videoAspectRatio);
+			
+			if(widthRatio != 1 || heightRatio != 1)
+			{
+				if(heightRatio > widthRatio)
+				{
+				 	this.videoPlayer.width = stage.stageWidth;
+					if (stageAspectRatio > videoAspectRatio)
+					{
+				 		this.videoPlayer.height = stage.stageWidth * videoAspectRatio;
+					}
+					else
+					{
+						this.videoPlayer.height = stage.stageWidth / videoAspectRatio;
+					}
+				}
+				else
+				{
+					if (stageAspectRatio > videoAspectRatio)
+					{
+						this.videoPlayer.width = stage.stageHeight * videoAspectRatio;
+					}
+					else
+					{
+						this.videoPlayer.width = stage.stageHeight / videoAspectRatio;
+					}
+					this.videoPlayer.height = stage.stageHeight;
+				}
+				
+				this.videoPlayer.x = Math.abs(this.videoPlayer.width - stage.stageWidth) / 2;
+				this.videoPlayer.y = Math.abs(this.videoPlayer.height - stage.stageHeight) / 2;
+			}
+			
+			this.log("RESIZE - Stage Size " + stage.stageWidth + "x" + stage.stageHeight);
+			this.log("RESIZE - Stage Size 2" + stage.width + "x" + stage.height);
+			this.log("RESIZE - Videoplayer Size " + stage.stageWidth + "x" + stage.stageHeight);
 		}
-
 		
 		private function addListener(eventName:String, listenerName:String):void
 		{
@@ -200,7 +248,6 @@ package
 		
 		private function onPlayerEvent(event:PlayerEvent):void
 		{
-			this.log("time " + event.eventValue);
 			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
 		}
 		
@@ -284,11 +331,11 @@ package
 					{
 						if(eventName == Consts.ON_STATE_CHANGE)
 						{
-							ExternalInterface.call(listeners[i], eventId, eventValue);
+							ExternalInterface.call(listeners[i], playerId, eventId, eventValue);
 						}
 						else
 						{
-							ExternalInterface.call(listeners[i], eventId);
+							ExternalInterface.call(listeners[i], playerId, eventId);
 						}
 					}
 				}
