@@ -43,11 +43,13 @@ package players
 		// hack to stop the video when endTime is reached 
 		private var stopVideoTimer:Timer;
 		private var stopVideoAt:Number;
+		private const bufferTime:Number = 3;
 		
 		// -------- Constructors
 		
 		public function VideoPlayer(width:int, height:int):void
 		{
+			this.log("START");
 			this.vidInfoObj = new Object();
 			this.eventListeners = new Array();
 			
@@ -76,7 +78,6 @@ package players
 		
 		public function load(url:String, startAt:Number = 0.00, stopAt:Number = -1.00):void
 		{
-			this.log("LOAD");
 			this.videoStream.close();
 			this.video.clear();
 			this.status = Consts.STATUS_LOADING;
@@ -89,24 +90,18 @@ package players
 			
 			if(stopAt > -1)
 			{
-				this.stopVideoAt = startAt + stopAt;
+				this.stopVideoAt = stopAt;
 			}
 			
-			// calling play seems to be the only way to load the video
 			this.videoStream.play(videoURL);
 		}
 		
 		public function play():void
 		{
-			this.log("PLAY " + this.startTime + " " + this.status);
 			this.onStateChange(Consts.ON_STATE_CHANGE_PLAYING);
-			if(((this.startTime != 0) && (this.status == Consts.STATUS_LOADING)) || this.status == Consts.STATUS_STOPPED)
-			{
-			    videoStream.seek(this.startTime);
-			}
 			videoStream.resume();
-			
 			this.stopVideoTimer.start();
+			this.status = Consts.STATUS_PLAYING;
 		}
 		
 		public function stop():void
@@ -114,14 +109,15 @@ package players
 			this.status = Consts.STATUS_STOPPED;
 			this.onStateChange(Consts.ON_STATE_CHANGE_STOPPED);
 			videoStream.pause();
+			this.status = Consts.STATUS_SEEKING;
+			videoStream.seek(this.startTime);
 		}
 		
 		public function pause():void
 		{
-			this.status = Consts.STATUS_PAUSED;
-			this.onStateChange(Consts.ON_STATE_CHANGE_PAUSED);
-			
 			videoStream.pause();
+			this.onStateChange(Consts.ON_STATE_CHANGE_PAUSED);
+			this.status = Consts.STATUS_PAUSED;
 		}
 				
 		// -------- Playback time
@@ -141,15 +137,37 @@ package players
 			return this.endTime;
 		}
 		
+		public function getStatus():String
+		{
+			return this.status;
+		}
+		
 		// -------- Error Handling Events 
 		
 		private function netStatusHandler(event:NetStatusEvent):void 
 		{
-			this.log(event.info.code);
+			this.log("Code: " + event.info.code + " / Status: " + this.status);
 			switch (event.info.code) 
 			{
+				case "NetStream.Seek.Notify":
+					if(this.status == Consts.STATUS_LOADING)
+					{
+						this.status = Consts.STATUS_SEEKING;
+						this.videoStream.resume();
+					}
+					break;
+				case "NetStream.Play.Start":
+					if(this.status == Consts.STATUS_LOADING)
+					{	
+						if(this.startTime > 0)
+						{
+							this.videoStream.pause();
+							this.videoStream.seek(this.startTime);
+						}
+					}
+					
+					break;
 				case "NetStream.Play.Stop":
-					this.log("Stop: " + this.videoStream.time + " " +  this.endTime);
 					this.status = Consts.STATUS_STOPPED;
 					if(int(this.videoStream.time) == int(this.endTime))
 					{
@@ -157,26 +175,9 @@ package players
 					}
 					break;
 				case "NetStream.Pause.Notify":
-					this.status = Consts.STATUS_PAUSED;
 					break;
 				case "NetConnection.Connect.Success":
 					connectStream();
-					break;
-				case "NetStream.Buffer.Full":
-					if(this.status == Consts.STATUS_LOADING)
-					{	
-						this.videoStream.pause();
-						//this.videoStream.seek(this.startTime);
-						this.status = Consts.STATUS_READY_TO_PLAY;
-						this.onLoading(Consts.ON_LOADING_MEDIA_LOADED);
-					}
-				case "NetStream.Buffer.Flush":
-					if(this.status == Consts.STATUS_LOADING)
-					{	
-						this.videoStream.pause();
-						this.status = Consts.STATUS_READY_TO_PLAY;
-						this.onLoading(Consts.ON_LOADING_MEDIA_LOADED);
-					}
 					break;
 				case "NetStream.Play.Failed":
 					this.onError(Consts.ON_ERROR_FAILED_TO_LOAD);
@@ -185,6 +186,15 @@ package players
 				case "NetStream.FileStructureInvalid":
 				case "NetStream.Play.NoSupportedTrackFound":
 					this.onError(Consts.ON_ERROR_FILE_NOT_SUPPORTED);
+					break;
+				case "NetStream.Buffer.Flush":
+				case "NetStream.Buffer.Full":
+					if(this.status == Consts.STATUS_SEEKING || this.status == Consts.STATUS_LOADING)
+					{
+						this.videoStream.pause();
+						this.status = Consts.STATUS_READY_TO_PLAY;
+						this.onLoading(Consts.ON_LOADING_MEDIA_LOADED);
+					}
 					break;
 			}
 		}
@@ -200,6 +210,7 @@ package players
 			videoStream = new NetStream(connection);
 			videoStream.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
 			videoStream.client = this;
+			videoStream.bufferTime = bufferTime;
 		}
 	
 		// -------- Timer events
@@ -219,8 +230,8 @@ package players
 			{	
 				if(this.videoStream.time >= this.stopVideoAt)
 				{
-					this.stop();
 					this.stopVideoTimer.stop();
+					this.stop();
 				}
 			}
 		}
@@ -228,6 +239,7 @@ package players
 		public function onMetaData(info:Object):void {
 			var vidInfoObj:Object = info;
 			
+			/*
 			for (var prop:String in vidInfoObj)
 			{
 				if(prop == "seekpoints")
@@ -239,15 +251,16 @@ package players
 						trace(sp);
 					}
 				}
-			}
+			}*/
 			
 			this.video.width = vidInfoObj.width;
 			this.video.height = vidInfoObj.height;
-			this.log("onMetaData width " + vidInfoObj.width);
-			this.log("onMetaData height " + vidInfoObj.height);
 			
 			this.endTime = videoStream.bufferTime = vidInfoObj.duration;
+			
+			
 			this.onLoading(Consts.ON_LOADING_METADATA_LOADED);
+			
 		}
 		
 		// -------- Event Dispatchers

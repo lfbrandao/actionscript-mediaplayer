@@ -21,5 +21,7 @@ package players
 		function getCurrentTime():Number;
 		function getStartTime():Number;
 		function getEndTime():Number;
+		
+		function getStatus():String;
 	}
 }

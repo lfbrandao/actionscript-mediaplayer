@@ -39,7 +39,7 @@ package
 		private var timeChangeTimer:Timer;		// media playback progress timer
 		private var lastTime:Number;			// 
 		
-		private var verbose:Boolean = false;		// enable / disable logging
+		private var verbose:Boolean = true;		// enable / disable logging
 		
 		// -------- Constructor
 		
@@ -100,6 +100,8 @@ package
 		 */
 		public function playerControl(action:String, value:String) : Number
 		{
+			this.log("playerControl " + action);
+			
 			if(action == "play")
 			{
 				this.play();
@@ -137,7 +139,7 @@ package
 			}
 			else if(action == "getEndTime")
 			{
-				this.log("time " + this.currentPlayer.getCurrentTime());
+				this.log("end time " + this.currentPlayer.getCurrentTime());
 				return this.currentPlayer.getEndTime();
 			}
 			else if(action == "resize")
@@ -291,7 +293,8 @@ package
 		 */
 		private function onTimeChange(event:TimerEvent):void
 		{
-			if(lastTime > 0 && lastTime == this.currentPlayer.getCurrentTime())
+			if(lastTime == this.currentPlayer.getCurrentTime() || 
+				this.currentPlayer.getStatus() != Consts.STATUS_PLAYING)
 			{
 				this.timeChangeTimer.stop();
 				return;
@@ -322,7 +325,12 @@ package
 		{
 			if(event.type == PlayerEvent.ON_LOADING && event.eventId == Consts.ON_LOADING_METADATA_LOADED)
 			{
-				this.resizePlayer(stage.stageWidth, stage.stageHeight);	
+				this.resizePlayer(stage.stageWidth, stage.stageHeight);
+				
+				if(this.currentPlayer.getStatus() != Consts.STATUS_LOADING)
+				{
+					return;
+				}
 			}
 			
 			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
@@ -402,17 +410,24 @@ package
 		 */
 		private function getFileType(url:String):String
 		{
-			var fileExtensionSeparatorIndex:Number = url.lastIndexOf('.');
+			/*var fileExtensionSeparatorIndex:Number = url.lastIndexOf('.');
 			var fileExtension:String = url.substr(fileExtensionSeparatorIndex + 1, url.length).toLowerCase();
+			this.log("file extension " + fileExtension);
 			
-			if(fileExtension == "mp3")
+			if(fileExtension.con"mp3")
 			{
 				return "mp3";
 			}
 			else
 			{
 				return "video";
+			}*/
+			
+			if(url.indexOf(".mp3") != -1)
+			{
+				return "mp3";
 			}
+			return "video";
 		}
 		
 		private function log(message:String):void

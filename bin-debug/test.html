@@ -158,9 +158,6 @@
 			{
 				txtBox = document.getElementById("txtTime");
 				txtBox.value = flashMovie("MediaPlayer").sendToFlash('getEndTime','');
-				vdiv = document.getElementById("videoDiv");
-				vdiv.style.width = "320px";
-				vdiv.style.height = "240px";
 			}
 			
 			function changeFlashSize()
@@ -182,7 +179,7 @@
 			{
 				font-family: Arial;
 				font-size: 10pt;
-				background-color: #000000;
+				background-color: #ffffff;
 			}
 			textarea
 			{
@@ -203,10 +200,10 @@
 			#videoDiv
 			{
 				border: black 0px solid;
-				width: 840px;
-				height: 630px;
-				/*width: 320px;
-				height: 240px;*/
+				/*width: 840px;
+				height: 630px;*/
+				width: 320px;
+				height: 240px;
 			}
 			
 			#flashDiv
@@ -244,7 +241,7 @@
 				
 				<a onclick="loadMovie()" href="javascript:void(0);">load</a>
 				<br/>
-				Url <input type="text" id="txtUrl" value="/Users/luisbrandao/Desktop/zeega/SoundingUnderground-desktop.mp4" style="width:400px;"/>
+				Url <input type="text" id="txtUrl" value="http://www.smallgauge.org/sensate/WildBillDays.mov" style="width:400px;"/>
 				<br/>
 				Start playing at <input type="text" id="txtVideoStart" value="0"/>
 				Stop playing at <input type="text" id="txtVideoStop" value="0"/><br/>

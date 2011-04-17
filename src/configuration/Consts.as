@@ -8,7 +8,8 @@ package configuration
 		public static const STATUS_PAUSED:String = "paused";
 		public static const STATUS_STOPPED:String = "stopped";
 		public static const STATUS_LOADING:String = "loading";
-		
+		public static const STATUS_SEEKING:String = "seeking";
+		public static const STATUS_PLAYING:String = "playing";
 		
 		public static const ON_LOADING_PLAYER_LOADED:int = 1;
 		public static const ON_LOADING_METADATA_LOADED:int = 2;

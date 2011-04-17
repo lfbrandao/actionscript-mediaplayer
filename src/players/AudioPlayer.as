@@ -80,6 +80,11 @@ package players
 			return int(Math.round(this.audioFile.length / 10)) / 100;
 		}
 		
+		public function getStatus():String
+		{
+			return "";
+		}
+		
 		// -------- Event Dispatchers
 		
 		public function onError(eventId:int):void
