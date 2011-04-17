@@ -171,13 +171,13 @@ package
 					this.currentPlayer = videoPlayer;
 					break;
 			}
+			
 			if(stopAt == 0)
 			{
 				stopAt = -1;
 			}
 			
 			this.currentPlayer.load(url, startAt, stopAt);
-			//this.resizePlayer(stage.stageWidth, stage.stageHeight);
 		}
 		
 		/**
@@ -221,66 +221,33 @@ package
 		 * Stage resize event listener. Adjusts the video player size to fit in
 		 * the stage.
 		 *
-		 * @event Stage resize event.
+		 * @param event Stage resize event.
+		 * 
+		 * @see resizePlayer
 		 */
 		private function onStageResize(event:Event):void 
 		{
 			this.resizePlayer(stage.stageWidth, stage.stageHeight);
-			/*
-			var stageAspectRatio:Number = stage.stageWidth / stage.stageHeight;
-			var videoAspectRatio:Number = this.videoPlayer.width / this.videoPlayer.height; 
-			
-			var widthRatio:Number = stage.stageWidth / this.videoPlayer.width;
-			var heightRatio:Number = stage.stageHeight / this.videoPlayer.height;
-			
-			if(widthRatio != 1 || heightRatio != 1)
-			{
-				if(heightRatio > widthRatio)
-				{
-				 	this.videoPlayer.width = stage.stageWidth;
-					if (stageAspectRatio > videoAspectRatio)
-					{
-				 		this.videoPlayer.height = stage.stageWidth * videoAspectRatio;
-					}
-					else
-					{
-						this.videoPlayer.height = stage.stageWidth / videoAspectRatio;
-					}
-				}
-				else
-				{
-					if (stageAspectRatio > videoAspectRatio)
-					{
-						this.videoPlayer.width = stage.stageHeight * videoAspectRatio;
-					}
-					else
-					{
-						this.videoPlayer.width = stage.stageHeight / videoAspectRatio;
-					}
-					this.videoPlayer.height = stage.stageHeight;
-				}
-				
-				this.videoPlayer.x = Math.abs(this.videoPlayer.width - stage.stageWidth) / 2;
-				this.videoPlayer.y = Math.abs(this.videoPlayer.height - stage.stageHeight) / 2;
-			}*/
 		}
 		
+		
+		// -------- Player resize
+		
+		/**
+		 * Adjusts the player size to the container size. Maintains the aspect ratio.
+		 *
+		 * @param canvasWidth Container width (in pixels)
+		 * @param canvasHeight  Container height (in pixels)
+		 * 
+		 * @see resizePlayer
+		 */
 		private function resizePlayer(canvasWidth:Number, canvasHeight:Number):void 
 		{
-			this.log("Resize player start");
-			this.log("Stage size " + stage.width + " - " + stage.height);
-			this.log("Stage size2 " + stage.stageWidth + " - " + stage.stageHeight);
-			this.log("Video player size " + videoPlayer.width + " - " + videoPlayer.height);
-			
-			this.log("Updating video size...");
-			
 			var stageAspectRatio:Number = canvasWidth / canvasHeight;
 			var videoAspectRatio:Number = this.videoPlayer.width / this.videoPlayer.height; 
 			
 			var widthRatio:Number = canvasWidth / this.videoPlayer.width;
 			var heightRatio:Number = canvasHeight / this.videoPlayer.height;
-			
-			this.log("Width / height ratio " + widthRatio + " - " + heightRatio);
 			
 			if(widthRatio != 1 || heightRatio != 1)
 			{
@@ -312,17 +279,16 @@ package
 				this.videoPlayer.x = 1 + (Math.abs(this.videoPlayer.width - canvasWidth) / 2);
 				this.videoPlayer.y = 1 + (Math.abs(this.videoPlayer.height - canvasHeight) / 2);
 			}
-			
-			this.log("Stage size " + stage.width + " - " + stage.height);
-			this.log("Stage size2 " + stage.stageWidth + " - " + stage.stageHeight);
-			this.log("Video player size " + videoPlayer.width + " - " + videoPlayer.height);
-			
-			this.log("Resize player ended");
 		}
-		
 		
 		// -------- Event Dispatchers
 		
+		/**
+		 * Playback progress event listener. Forwards the current position
+		 * of the video / audio to Javascript listeners.
+		 *
+		 * @param event Event details
+		 */
 		private function onTimeChange(event:TimerEvent):void
 		{
 			if(lastTime > 0 && lastTime == this.currentPlayer.getCurrentTime())
@@ -335,14 +301,23 @@ package
 			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_STATE_CHANGE, Consts.ON_STATE_CHANGE_TIME, this.currentPlayer.getCurrentTime()));
 		}
 		
+		
+		/**
+		 * Player loaded event listener. Forwards the event
+		 * of the video / audio to Javascript listeners.
+		 *
+		 * @param event Event details
+		 */
 		private function onPlayerLoaded(event:Event):void
 		{
-			//this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_LOADING, 1));
-			this.log("Player Loaded");
-			// this.onStageResize(event);
 			this.callJavascriptFunction("onPlayerLoaded", this.playerId);
 		}
 		
+		/**
+		 * Forwards a player event to Javascript listeners.
+		 *
+		 * @param event Event details
+		 */
 		private function onPlayerEvent(event:PlayerEvent):void
 		{
 			if(event.type == PlayerEvent.ON_LOADING && event.eventId == Consts.ON_LOADING_METADATA_LOADED)
@@ -353,14 +328,22 @@ package
 			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
 		}
 		
-		
 		// -------- Volume control
 		
+		/**
+		 * Returns the current audio volume.
+		 *
+		 */
 		public function getVolume():Number
 		{
 			return SoundMixer.soundTransform.volume;
 		}
 		
+		/**
+		 * Sets the player audio volume.
+		 *
+		 * @param value Volume level. Between 0 and 1.
+		 */
 		public function setVolume(value:Number):void
 		{
 			SoundMixer.soundTransform = new SoundTransform(value);
@@ -369,6 +352,13 @@ package
 		
 		// -------- Call Javascript Functions
 		
+		/**
+		 * Invokes a Javascript function with one parameter.
+		 *
+		 * @param functionName Function name
+		 * @param functionValue Parameter value
+		 *
+		 */
 		private function callJavascriptFunction(functionName:String, functionValue:String) : void
 		{
 			if(ExternalInterface.available)  
@@ -377,6 +367,15 @@ package
 			}
 		}
 		
+		/**
+		 * Dispatches an Event to Javascript listeners.
+		 *
+		 * @param eventName Name of the event
+		 * @param eventId Id of the event
+		 * @param eventValue Value of the event (optional parameter)
+		 *
+		 * @see Consts class
+		 */
 		private function dispatchEventToJavascript(eventName:String, eventId:int, eventValue:Number = 0.00) : void  
 		{  
 			// TO-DO if not available?
@@ -396,6 +395,11 @@ package
 		
 		// -------- Helpers
 		
+		/**
+		 * Returns the file type (mp3 or video) given an URL.
+		 *
+		 * @param url File URL
+		 */
 		private function getFileType(url:String):String
 		{
 			var fileExtensionSeparatorIndex:Number = url.lastIndexOf('.');
