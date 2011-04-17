@@ -11,6 +11,7 @@
 			params.allowscriptaccess = "always";
 			params.allownetworking = "all";
 			params.allowfullscreen = "true";
+			params.bgcolor = "#000000"
 			var attributes = {};
 			attributes.id = "MediaPlayer";
 			swfobject.embedSWF("MediaPlayer.swf", "flashDiv", "100%", "100%", "9.0.0", false, flashvars, params, attributes);
@@ -181,6 +182,7 @@
 			{
 				font-family: Arial;
 				font-size: 10pt;
+				background-color: #000000;
 			}
 			textarea
 			{
@@ -242,7 +244,7 @@
 				
 				<a onclick="loadMovie()" href="javascript:void(0);">load</a>
 				<br/>
-				Url <input type="text" id="txtUrl" value="/Users/luisbrandao/Desktop/zeega/WildBillDays.mov" style="width:400px;"/>
+				Url <input type="text" id="txtUrl" value="/Users/luisbrandao/Desktop/zeega/SoundingUnderground-desktop.mp4" style="width:400px;"/>
 				<br/>
 				Start playing at <input type="text" id="txtVideoStart" value="0"/>
 				Stop playing at <input type="text" id="txtVideoStop" value="0"/><br/>

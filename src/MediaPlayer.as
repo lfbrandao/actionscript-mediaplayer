@@ -16,6 +16,8 @@ package
 	import flash.media.SoundTransform;
 	import flash.utils.*;
 	
+	import flashx.textLayout.formats.BackgroundColor;
+	
 	import players.AudioPlayer;
 	import players.IPlayer;
 	import players.VideoPlayer;
@@ -43,9 +45,6 @@ package
 		
 		public function MediaPlayer()
 		{
-			this.cacheAsBitmap = true; 
-			this.opaqueBackground = 0x000000;
-			
 			this.currentFileURL = "";
 		
 			// create and configure the audio player
@@ -310,8 +309,8 @@ package
 					this.videoPlayer.height = canvasHeight;
 				}
 				
-				this.videoPlayer.x = Math.abs(this.videoPlayer.width - canvasWidth) / 2;
-				this.videoPlayer.y = Math.abs(this.videoPlayer.height - canvasHeight) / 2;
+				this.videoPlayer.x = 1 + (Math.abs(this.videoPlayer.width - canvasWidth) / 2);
+				this.videoPlayer.y = 1 + (Math.abs(this.videoPlayer.height - canvasHeight) / 2);
 			}
 			
 			this.log("Stage size " + stage.width + " - " + stage.height);
