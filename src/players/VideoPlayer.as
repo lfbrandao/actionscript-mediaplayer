@@ -32,8 +32,6 @@ package players
 		private var vidInfoObj:Object;			// array for loading metadata
 		private var eventListeners:Array;		// event listeners list
 		
-		private var timer:Timer;
-		
 		private var videoURL:String;			// current video's URL
 		private var startTime:Number;			// current video's start time
 		private var endTime:Number;				// current video's end time
@@ -41,8 +39,6 @@ package players
 		private var status:String = "";			// player status
 		
 		// hack to stop the video when endTime is reached 
-		private var stopVideoTimer:Timer;
-		private var stopVideoAt:Number;
 		private const bufferTime:Number = 3;
 		
 		// -------- Constructors
@@ -65,13 +61,6 @@ package players
 			
 			// add the video the sprite
 			addChild(video);
-			
-			// hack
-			this.timer = new Timer(1); //Set a timer for 1 ms.
-			timer.addEventListener(TimerEvent.TIMER, onTimer);
-			
-			this.stopVideoTimer = new Timer(1);
-			this.stopVideoTimer.addEventListener(TimerEvent.TIMER, onStopVideoTimer);
 		}
 		
 		// -------- Playback control
@@ -88,11 +77,6 @@ package players
 			
 			this.startTime = startAt;
 			
-			if(stopAt > -1)
-			{
-				this.stopVideoAt = stopAt;
-			}
-			
 			this.videoStream.play(videoURL);
 		}
 		
@@ -100,7 +84,6 @@ package players
 		{
 			this.onStateChange(Consts.ON_STATE_CHANGE_PLAYING);
 			videoStream.resume();
-			this.stopVideoTimer.start();
 			this.status = Consts.STATUS_PLAYING;
 		}
 		
@@ -213,54 +196,15 @@ package players
 			videoStream.bufferTime = bufferTime;
 		}
 	
-		// -------- Timer events
-		private function onTimer(evt:TimerEvent):void
-		{
-			var percent:Number = Math.round(videoStream.bytesLoaded/videoStream.bytesTotal * 100 );
-			if(percent == 100)
-			{
-				this.timer.stop();
-			}
-		}
-		
-		private function onStopVideoTimer(evt:TimerEvent):void
-		{
-			// this.log("onStopVideoTimer " + this.stopVideoAt + " - " + this.videoStream.time); 
-			if(this.endTime > -1)
-			{	
-				if(this.videoStream.time >= this.stopVideoAt)
-				{
-					this.stopVideoTimer.stop();
-					this.stop();
-				}
-			}
-		}
-		
 		public function onMetaData(info:Object):void {
 			var vidInfoObj:Object = info;
-			
-			/*
-			for (var prop:String in vidInfoObj)
-			{
-				if(prop == "seekpoints")
-				{
-					trace(prop);
-					var spoints:Object = prop;
-					for (var sp:String in spoints)
-					{
-						trace(sp);
-					}
-				}
-			}*/
 			
 			this.video.width = vidInfoObj.width;
 			this.video.height = vidInfoObj.height;
 			
 			this.endTime = videoStream.bufferTime = vidInfoObj.duration;
 			
-			
 			this.onLoading(Consts.ON_LOADING_METADATA_LOADED);
-			
 		}
 		
 		// -------- Event Dispatchers
@@ -288,8 +232,10 @@ package players
 		private function log(message:String):void
 		{
 			var currentTime:Date = new Date();
-			
-			trace("VideoPlayer " + currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds() + " " + message);
+			if(verbose)
+			{
+				trace("VideoPlayer " + currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds() + " " + message);
+			}
 		}
 	}
 }

@@ -32,7 +32,9 @@ package players
 		
 		public function load(url:String, startAt:Number = 0.00, stopAt:Number = -1.00):void
 		{
-			this.startTime = startAt;
+			this.startTime = startAt * 1000;
+			this.audioFile = new Sound();
+			this.audioFile.addEventListener(Event.COMPLETE, onComplete);
 			this.audioFile.load(new URLRequest(url));
 		}
 		
@@ -40,13 +42,16 @@ package players
 		{
 			if(this.playingAt > this.startTime)
 			{
+				trace("1");
 				soundChannel = this.audioFile.play(playingAt);
 			}
 			else
 			{
+				trace("2 - startAt " + startTime);
 				soundChannel = this.audioFile.play(startTime);
 			}
 			this.onStateChange(Consts.ON_STATE_CHANGE_PLAYING);
+			this.status = Consts.STATUS_PLAYING;
 		}
 		
 		public function pause():void
@@ -54,6 +59,7 @@ package players
 			this.playingAt = soundChannel.position;
 			this.soundChannel.stop();
 			this.onStateChange(Consts.ON_STATE_CHANGE_PAUSED);
+			this.status = Consts.STATUS_PAUSED;
 		}
 		
 		public function stop():void
@@ -61,12 +67,21 @@ package players
 			this.playingAt = 0.00;
 			soundChannel.stop();
 			this.onStateChange(Consts.ON_STATE_CHANGE_STOPPED);
+			this.status = Consts.STATUS_STOPPED;
 		}
 		
 		public function getCurrentTime():Number
 		{
 			// http://kb2.adobe.com/cps/155/tn_15542.html
-			return int(Math.round(this.soundChannel.position / 10)) / 100;
+			try
+			{
+				return int(Math.round(this.soundChannel.position / 10)) / 100;
+			}
+			catch(Exception)
+			{
+				return 0;
+			}
+			return 0;
 		}
 		
 		public function getStartTime():Number
@@ -82,7 +97,7 @@ package players
 		
 		public function getStatus():String
 		{
-			return "";
+			return this.status;
 		}
 		
 		// -------- Event Dispatchers

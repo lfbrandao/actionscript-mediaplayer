@@ -39,7 +39,9 @@ package
 		private var timeChangeTimer:Timer;		// media playback progress timer
 		private var lastTime:Number;			// 
 		
-		private var verbose:Boolean = true;		// enable / disable logging
+		private var verbose:Boolean = false;		// enable / disable logging
+		
+		private var mediaOut:Number;
 		
 		// -------- Constructor
 		
@@ -122,6 +124,8 @@ package
 				var params:Array = value.split(",");
 				
 				this.load(params[0], params[1], params[2]);
+				
+				this.mediaOut = params[2];
 			}
 			else if(action == "setVolume")
 			{
@@ -203,15 +207,6 @@ package
 		 */
 		private function play():void
 		{
-			/*if(this.currentFileURL == "")
-			{
-				this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_ERROR, Consts.ON_ERROR_NO_FILE_LOADED));
-			}
-			else
-			{
-			
-			}
-			*/
 			this.currentPlayer.play();
 			this.timeChangeTimer.start();
 		}
@@ -297,6 +292,13 @@ package
 				this.currentPlayer.getStatus() != Consts.STATUS_PLAYING)
 			{
 				this.timeChangeTimer.stop();
+				return;
+			}
+			
+			if(this.mediaOut > 0 && this.currentPlayer.getCurrentTime() >= this.mediaOut)
+			{
+				this.timeChangeTimer.stop();
+				this.currentPlayer.stop();
 				return;
 			}
 			
@@ -410,19 +412,6 @@ package
 		 */
 		private function getFileType(url:String):String
 		{
-			/*var fileExtensionSeparatorIndex:Number = url.lastIndexOf('.');
-			var fileExtension:String = url.substr(fileExtensionSeparatorIndex + 1, url.length).toLowerCase();
-			this.log("file extension " + fileExtension);
-			
-			if(fileExtension.con"mp3")
-			{
-				return "mp3";
-			}
-			else
-			{
-				return "video";
-			}*/
-			
 			if(url.indexOf(".mp3") != -1)
 			{
 				return "mp3";
