@@ -40,18 +40,19 @@ package players
 		
 		public function play():void
 		{
-			if(this.playingAt > this.startTime)
+			if(this.status != Consts.STATUS_PLAYING)
 			{
-				trace("1");
-				soundChannel = this.audioFile.play(playingAt);
+				if(this.playingAt > this.startTime)
+				{
+					soundChannel = this.audioFile.play(playingAt);
+				}
+				else
+				{
+					soundChannel = this.audioFile.play(startTime);
+				}
+				this.onStateChange(Consts.ON_STATE_CHANGE_PLAYING);
+				this.status = Consts.STATUS_PLAYING;
 			}
-			else
-			{
-				trace("2 - startAt " + startTime);
-				soundChannel = this.audioFile.play(startTime);
-			}
-			this.onStateChange(Consts.ON_STATE_CHANGE_PLAYING);
-			this.status = Consts.STATUS_PLAYING;
 		}
 		
 		public function pause():void
@@ -91,7 +92,6 @@ package players
 		
 		public function getEndTime():Number
 		{
-			//return (this.audioFile.length / 10);
 			return int(Math.round(this.audioFile.length / 10)) / 100;
 		}
 		
