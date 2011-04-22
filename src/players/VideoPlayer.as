@@ -78,6 +78,7 @@ package players
 			this.startTime = startAt;
 			
 			this.videoStream.play(videoURL);
+			this.video.visible = false;
 		}
 		
 		public function play():void
@@ -174,11 +175,46 @@ package players
 				case "NetStream.Buffer.Full":
 					if(this.status == Consts.STATUS_SEEKING || this.status == Consts.STATUS_LOADING)
 					{
+						/*
 						this.videoStream.pause();
 						this.status = Consts.STATUS_READY_TO_PLAY;
 						this.onLoading(Consts.ON_LOADING_MEDIA_LOADED);
+						*/
+						this.changeVideoStatusToPlay();
 					}
 					break;
+			}
+		}
+		
+		private var seekEventTimer:Timer;
+		
+		private function changeVideoStatusToPlay()
+		{
+			this.log("changeVideoStatusToPlay " + this.getCurrentTime() + " " + this.startTime);
+			if(this.getCurrentTime() >= this.startTime)
+			{
+				this.videoStream.pause();
+				this.status = Consts.STATUS_READY_TO_PLAY;
+				this.onLoading(Consts.ON_LOADING_MEDIA_LOADED);
+				this.video.visible = true;
+			}
+			else
+			{
+				this.seekEventTimer = new Timer(1);
+				this.seekEventTimer.addEventListener(TimerEvent.TIMER, onSeekEventTimer);
+				this.seekEventTimer.start();
+			}
+		}
+		
+		private function onSeekEventTimer(event:Event):void
+		{
+			if(this.getCurrentTime() >= this.startTime)
+			{
+				this.seekEventTimer.stop();
+				this.videoStream.pause();
+				this.status = Consts.STATUS_READY_TO_PLAY;
+				this.onLoading(Consts.ON_LOADING_MEDIA_LOADED);
+				this.video.visible = true;
 			}
 		}
 		
@@ -201,6 +237,23 @@ package players
 			
 			this.video.width = vidInfoObj.width;
 			this.video.height = vidInfoObj.height;
+			
+			// http://stackoverflow.com/questions/4366093/how-to-get-current-frame-of-currently-playing-video-file
+			var metaInfo = info;
+			var tmpstr:String = '';
+			for(var s:String in info){
+				var tstr:String = s + ' = ' + info[s] + '\n';
+				tmpstr += tstr.indexOf('object') == -1 ? tstr : '';
+				for(var a:String in info[s]){
+					var ttstr:String = s + ':' + a + ' = ' + info[s][a] + '\n';
+					tmpstr += ttstr.indexOf('object') == -1 ? ttstr : '';
+					for(var c:String in info[s][a]){
+						var tttstr:String = s + ':' + a + ':' + c + ' = ' + info[s][a][c] + '\n';
+						tmpstr += tttstr.indexOf('object') == -1 ? tttstr : '';                     
+					}
+				}
+			}
+			this.log(tmpstr);     
 			
 			this.endTime = videoStream.bufferTime = vidInfoObj.duration;
 			
@@ -227,7 +280,7 @@ package players
 		
 		// -------- Helper methods
 		
-		private var verbose:Boolean = false;
+		private var verbose:Boolean = true;
 		
 		private function log(message:String):void
 		{

@@ -183,6 +183,7 @@ package
 				stopAt = -1;
 			}
 			
+			this.setVolume(0);
 			this.currentPlayer.load(url, startAt, stopAt);
 		}
 		
@@ -335,6 +336,11 @@ package
 				}
 			}
 			
+			if(event.type == PlayerEvent.ON_LOADING && event.eventId == Consts.ON_LOADING_MEDIA_LOADED)
+			{
+				this.setVolume(1);
+			}
+			
 			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
 		}
 		
@@ -358,7 +364,6 @@ package
 		{
 			SoundMixer.soundTransform = new SoundTransform(value);
 		}
-		
 		
 		// -------- Call Javascript Functions
 		
@@ -412,7 +417,9 @@ package
 		 */
 		private function getFileType(url:String):String
 		{
-			if(url.indexOf(".mp3") != -1)
+			url = url.toLowerCase();
+			
+			if(url.indexOf(".mp3") != -1 || url.indexOf("soundcloud") != -1)
 			{
 				return "mp3";
 			}
