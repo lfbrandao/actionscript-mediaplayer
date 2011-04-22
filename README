@@ -1,9 +1,10 @@
 =Actionscript media-player
+>> work in progress - not completely ready for production <<
+
+== Features
 
 == Know issues
-* video player is not resizable yet
 * seek does not work for all MP4 video files - probably due to missing keyframes or seekpoints
-* time status methods and events are not working properly for the audio player
 
 == Missing features
 * fade
