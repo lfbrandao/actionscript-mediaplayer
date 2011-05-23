@@ -1,22 +1,19 @@
 =Actionscript media-player
->> work in progress - not completely ready for production <<
+Lightweight Flash object for playing audio and video files with a Javascript API.
+Used at the Sensate Journal (http://sensatejournal.com/) to play Zeega (http://www.zeega.org) pieces on Firefox.
 
 == Features
+* video formats supported: mp4, m4v
+* audio formats supported: mp3
+* start and end time are configurable
 
-== Know issues
-* seek does not work for all MP4 video files - probably due to missing keyframes or seekpoints
-
-== Missing features
-* fade
-* toggle mute (can be accomplished by changing the volume to 0)
-* playerId
-* configurable video stop time
-* WAV support
+== Known issues
+* seeking on MP4 files is dependent on the number of key frames included in the file
 
 == Components
 * MediaPlayer 
 Extends Sprite
-Main class. Instantiates and controls both the video and the audio players. Exposes an API for Javascript.
+Main class. Instantiates and controls both the video and the audio players. Exposes an API in Javascript.
 
 * VideoPlayer extends Sprite, implements IPlayer
 Extends Sprite, Implements IPlayer
