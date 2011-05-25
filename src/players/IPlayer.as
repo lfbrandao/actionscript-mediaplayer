@@ -1,5 +1,9 @@
 package players
 {
+	/**
+	 * Contract for media players
+	 * 
+	 */
 	public interface IPlayer
 	{
 		// load video
@@ -14,9 +18,6 @@ package players
 		function onError(eventId:int):void;
 		function onStateChange(eventId:int, eventValue:Number = 0):void;
 		function onLoading(eventId:int):void;
-		
-		//function isMuted():void;
-		//function mute(value:Boolean):void;
 		
 		function getCurrentTime():Number;
 		function getStartTime():Number;

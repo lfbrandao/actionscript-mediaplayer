@@ -2,6 +2,10 @@ package events
 {
 	import flash.events.*;
 
+	/**
+	 * Media player event.
+	 * 
+	 */
 	public class PlayerEvent extends Event
 	{
 		public static const ON_ERROR:String = "onError";
@@ -12,6 +16,14 @@ package events
 		public var eventId:int;
 		public var eventValue:Number;
 		
+		/**
+		 * Public constructor
+		 * 
+		 * @param type Event type (see class Consts)
+		 * @param id Event id (see class Consts)
+		 * @param bubbles Inherited
+		 * @param cancelable Inherited 
+		 */
 		public function PlayerEvent(type:String, id:int = 0, value:Number = 0.00,
 									bubbles:Boolean = false, 
 									cancelable:Boolean = false 

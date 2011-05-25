@@ -11,6 +11,7 @@ package configuration
 		public static const STATUS_SEEKING:String = "seeking";
 		public static const STATUS_PLAYING:String = "playing";
 		
+		// event id
 		public static const ON_LOADING_PLAYER_LOADED:int = 1;
 		public static const ON_LOADING_METADATA_LOADED:int = 2;
 		public static const ON_LOADING_MEDIA_LOADED:int = 3;
@@ -25,6 +26,7 @@ package configuration
 		public static const ON_ERROR_FILE_NOT_SUPPORTED:int = 2;
 		public static const ON_ERROR_NO_FILE_LOADED:int = 3;
 		
+		// event type
 		public static const ON_LOADING:String = "onLoading";
 		public static const ON_STATE_CHANGE:String = "onStateChange";
 		public static const ON_ERROR:String = "onError";

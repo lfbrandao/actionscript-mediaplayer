@@ -23,6 +23,13 @@ package players
 	import flash.net.NetStreamPlayOptions;
 	import flash.utils.Timer;
 	
+	/**
+	 * Video player. Uses the ActionScript' NetConnection and the NetStream objects
+	 * for the video playback.
+	 * 
+	 * @see http://livedocs.adobe.com/flash/9.0/ActionScriptLangRefV3/flash/net/NetConnection.html
+	 * @see http://livedocs.adobe.com/flash/9.0/ActionScriptLangRefV3/flash/net/NetStream.html
+	 */
 	public class VideoPlayer extends Sprite implements IPlayer
 	{
 		private var connection:NetConnection;	// video stream connection 
@@ -41,8 +48,13 @@ package players
 		// hack to stop the video when endTime is reached 
 		private const bufferTime:Number = 3;
 		
-		// -------- Constructors
-		
+		/**
+		 * Public constructor. Creates a video player that fits its container.
+		 *
+		 * @param width Container width
+		 * @param param2 Container height
+		 *
+		 */
 		public function VideoPlayer(width:int, height:int):void
 		{
 			this.log("START");
@@ -52,7 +64,6 @@ package players
 			// open a remote connection to stream the video
 			this.connection = new NetConnection();
 			this.connection.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
-			this.connection.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
 			this.connection.connect(null);
 	
 			// init the video object and attach it to the stream
@@ -65,6 +76,14 @@ package players
 		
 		// -------- Playback control
 		
+		/**
+		 * Loads a video file.
+		 *
+		 * @param url File url
+		 * @param startAt Start playing the video at this time (in seconds). Optional parameter with 0 (beginning of file) as default value.
+		 * @param stopAt Stop playing the video after this time (in seconds). Optional parameter with -1 (end of file) as default value. 
+		 *
+		 */
 		public function load(url:String, startAt:Number = 0.00, stopAt:Number = -1.00):void
 		{
 			this.videoStream.close();
@@ -81,6 +100,9 @@ package players
 			this.video.visible = false;
 		}
 		
+		/**
+		 * Plays a video. If there is no video file loaded the error event is triggered.
+		 */
 		public function play():void
 		{
 			this.onStateChange(Consts.ON_STATE_CHANGE_PLAYING);
@@ -88,6 +110,9 @@ package players
 			this.status = Consts.STATUS_PLAYING;
 		}
 		
+		/**
+		 * Stops the video playback. Subsequent calls to 'play' will play the video from the beginning.
+		 */
 		public function stop():void
 		{
 			this.status = Consts.STATUS_STOPPED;
@@ -97,6 +122,9 @@ package players
 			videoStream.seek(this.startTime);
 		}
 		
+		/**
+		 * Pauses the video playback.
+		 */
 		public function pause():void
 		{
 			videoStream.pause();
@@ -106,33 +134,51 @@ package players
 				
 		// -------- Playback time
 		
+		/**
+		 * Returns the current playback time.
+		 */
 		public function getCurrentTime():Number
 		{
 			return this.videoStream.time;
 		}
 		
+		/**
+		 * Returns the configured video start time.
+		 */
 		public function getStartTime():Number
 		{
 			return this.startTime;
 		}
 		
+		/**
+		 * Returns the configured video end time.
+		 */
 		public function getEndTime():Number
 		{
 			return this.endTime;
 		}
 		
+		/**
+		 * Returns the player status.
+		 */
 		public function getStatus():String
 		{
 			return this.status;
 		}
 		
-		// -------- Error Handling Events 
+		// -------- Event Handling 
 		
+		/**
+		 * Triggered by the video streaming object. Handles the video streaming.
+		 * 
+		 * @param event The event details. 
+		 */
 		private function netStatusHandler(event:NetStatusEvent):void 
 		{
 			this.log("Code: " + event.info.code + " / Status: " + this.status);
 			switch (event.info.code) 
 			{
+				// occurs after a seek operation. the video playback is resumed.
 				case "NetStream.Seek.Notify":
 					if(this.status == Consts.STATUS_LOADING)
 					{
@@ -140,6 +186,8 @@ package players
 						this.videoStream.resume();
 					}
 					break;
+				// occurs when the video playback starts or 
+				// when a video is loaded. in the latter, the player is paused.
 				case "NetStream.Play.Start":
 					if(this.status == Consts.STATUS_LOADING)
 					{	
@@ -149,8 +197,8 @@ package players
 							this.videoStream.seek(this.startTime);
 						}
 					}
-					
 					break;
+				// occurs when the video playback stops
 				case "NetStream.Play.Stop":
 					this.status = Consts.STATUS_STOPPED;
 					if(int(this.videoStream.time) == int(this.endTime))
@@ -158,11 +206,11 @@ package players
 						this.onStateChange(Consts.ON_STATE_CHANGE_ENDED);
 					}
 					break;
-				case "NetStream.Pause.Notify":
-					break;
+				// occurs when the connection to the video stream is successful. 
 				case "NetConnection.Connect.Success":
 					connectStream();
 					break;
+				// occurs when the connection to the video stream fails.
 				case "NetStream.Play.Failed":
 					this.onError(Consts.ON_ERROR_FAILED_TO_LOAD);
 					break;
@@ -171,16 +219,27 @@ package players
 				case "NetStream.Play.NoSupportedTrackFound":
 					this.onError(Consts.ON_ERROR_FILE_NOT_SUPPORTED);
 					break;
+				// occurs when the player is ready to play a video
 				case "NetStream.Buffer.Flush":
 				case "NetStream.Buffer.Full":
 					if(this.status == Consts.STATUS_SEEKING || this.status == Consts.STATUS_LOADING)
 					{
-						/*
-						this.videoStream.pause();
-						this.status = Consts.STATUS_READY_TO_PLAY;
-						this.onLoading(Consts.ON_LOADING_MEDIA_LOADED);
-						*/
-						this.changeVideoStatusToPlay();
+						if(this.getCurrentTime() >= this.startTime)
+						{
+							// ready to play
+							this.videoStream.pause();
+							this.status = Consts.STATUS_READY_TO_PLAY;
+							this.onLoading(Consts.ON_LOADING_MEDIA_LOADED);
+							this.video.visible = true;
+						}
+						else
+						{
+							// HACK: seeking not always work. silently play the video
+							// till the position configured as the start time is reached.
+							this.seekEventTimer = new Timer(1);
+							this.seekEventTimer.addEventListener(TimerEvent.TIMER, onSeekEventTimer);
+							this.seekEventTimer.start();
+						}
 					}
 					break;
 			}
@@ -188,24 +247,12 @@ package players
 		
 		private var seekEventTimer:Timer;
 		
-		private function changeVideoStatusToPlay()
-		{
-			this.log("changeVideoStatusToPlay " + this.getCurrentTime() + " " + this.startTime);
-			if(this.getCurrentTime() >= this.startTime)
-			{
-				this.videoStream.pause();
-				this.status = Consts.STATUS_READY_TO_PLAY;
-				this.onLoading(Consts.ON_LOADING_MEDIA_LOADED);
-				this.video.visible = true;
-			}
-			else
-			{
-				this.seekEventTimer = new Timer(1);
-				this.seekEventTimer.addEventListener(TimerEvent.TIMER, onSeekEventTimer);
-				this.seekEventTimer.start();
-			}
-		}
-		
+		/**
+		 * Triggered by the event that gives support to video seeking (HACK)
+		 * Used to silently play the video till the position configured as the start time is reached.
+		 * 
+		 * @param event The event details. 
+		 */
 		private function onSeekEventTimer(event:Event):void
 		{
 			if(this.getCurrentTime() >= this.startTime)
@@ -218,11 +265,10 @@ package players
 			}
 		}
 		
-		private function securityErrorHandler(event:SecurityErrorEvent):void 
-		{
-			this.log("securityErrorHandler: " + event);
-		}
-		
+		/**
+		 * Connects the player to a video stream
+		 * 
+		 */
 		private function connectStream():void 
 		{
 			//this.log("netstream created");
@@ -232,6 +278,11 @@ package players
 			videoStream.bufferTime = bufferTime;
 		}
 	
+		/**
+		 * Loads the video metadata
+		 * 
+		 * @param info Metadata 
+		 */
 		public function onMetaData(info:Object):void {
 			var vidInfoObj:Object = info;
 			
@@ -239,21 +290,6 @@ package players
 			this.video.height = vidInfoObj.height;
 			
 			// http://stackoverflow.com/questions/4366093/how-to-get-current-frame-of-currently-playing-video-file
-			var metaInfo = info;
-			var tmpstr:String = '';
-			for(var s:String in info){
-				var tstr:String = s + ' = ' + info[s] + '\n';
-				tmpstr += tstr.indexOf('object') == -1 ? tstr : '';
-				for(var a:String in info[s]){
-					var ttstr:String = s + ':' + a + ' = ' + info[s][a] + '\n';
-					tmpstr += ttstr.indexOf('object') == -1 ? ttstr : '';
-					for(var c:String in info[s][a]){
-						var tttstr:String = s + ':' + a + ':' + c + ' = ' + info[s][a][c] + '\n';
-						tmpstr += tttstr.indexOf('object') == -1 ? tttstr : '';                     
-					}
-				}
-			}
-			this.log(tmpstr);     
 			
 			this.endTime = videoStream.bufferTime = vidInfoObj.duration;
 			
@@ -262,17 +298,32 @@ package players
 		
 		// -------- Event Dispatchers
 		
+		/**
+		 * Dispatched when an error occurs. 
+		 * 
+		 * @param event The event details. 
+		 */
 		public function onError(eventId:int):void
 		{
 			this.dispatchEvent(new PlayerEvent(PlayerEvent.ON_ERROR, eventId));  
 		}
-		
+
+		/**
+		 * Dispatched when the player state changes
+		 * 
+		 * @param eventId Event id
+		 * @param eventValue Event value 
+		 */
 		public function onStateChange(eventId:int, eventValue:Number = 0):void
 		{
-			//this.log("OnStateChange " + eventValue);
 			this.dispatchEvent(new PlayerEvent(PlayerEvent.ON_STATE_CHANGE, eventId, eventValue));  
 		}
 		
+		/**
+		 * Dispatched when an loading event occurs.
+		 * 
+		 * @param eventId Event id
+		 */
 		public function onLoading(eventId:int):void 
 		{  
 			this.dispatchEvent(new PlayerEvent(PlayerEvent.ON_LOADING, eventId));

@@ -22,6 +22,12 @@ package
 	import players.IPlayer;
 	import players.VideoPlayer;
 	
+	/**
+	 * Entry point to the media player. Exposes the Javascript API and instatiates
+	 * the audio and the video player objects.
+	 * 
+	 * 
+	 */
 	public class MediaPlayer extends Sprite
 	{
 		private static const STATUS_CAN_PLAY:String = "canPlay";
@@ -37,11 +43,12 @@ package
 		private var playerId:String; 			// player id
 		
 		private var timeChangeTimer:Timer;		// media playback progress timer
-		private var lastTime:Number;			// 
+		private var lastTime:Number;			 
 		
-		private var verbose:Boolean = false;		// enable / disable logging
+		private var verbose:Boolean = true;		// enable / disable logging
 		
 		private var mediaOut:Number;
+		private var currentVolume:Number;
 		
 		// -------- Constructor
 		
@@ -88,6 +95,8 @@ package
 			
 			// notify listeners that the player is loaded
 			this.loaderInfo.addEventListener(Event.COMPLETE, onPlayerLoaded);
+			
+			this.currentVolume = 1;
 		}
 		
 		
@@ -183,7 +192,9 @@ package
 				stopAt = -1;
 			}
 			
-			this.setVolume(0);
+			// mute player while loading media
+			SoundMixer.soundTransform = new SoundTransform(0);
+			
 			this.currentPlayer.load(url, startAt, stopAt);
 		}
 		
@@ -274,6 +285,7 @@ package
 					this.videoPlayer.height = canvasHeight;
 				}
 				
+				// center the player
 				this.videoPlayer.x = 1 + (Math.abs(this.videoPlayer.width - canvasWidth) / 2);
 				this.videoPlayer.y = 1 + (Math.abs(this.videoPlayer.height - canvasHeight) / 2);
 			}
@@ -289,6 +301,7 @@ package
 		 */
 		private function onTimeChange(event:TimerEvent):void
 		{
+			// if the player is stopped, disable the timer that triggers this event
 			if(lastTime == this.currentPlayer.getCurrentTime() || 
 				this.currentPlayer.getStatus() != Consts.STATUS_PLAYING)
 			{
@@ -296,13 +309,15 @@ package
 				return;
 			}
 			
+			// if the current playback time excedes the limit, disable the timer and stop the player
 			if(this.mediaOut > 0 && this.currentPlayer.getCurrentTime() >= this.mediaOut)
 			{
 				this.timeChangeTimer.stop();
 				this.currentPlayer.stop();
 				return;
 			}
-			
+			 
+			// if the player is playing, trigger the progress event with the current playback time
 			this.lastTime = this.currentPlayer.getCurrentTime();
 			this.onPlayerEvent(new PlayerEvent(PlayerEvent.ON_STATE_CHANGE, Consts.ON_STATE_CHANGE_TIME, this.currentPlayer.getCurrentTime()));
 		}
@@ -338,7 +353,8 @@ package
 			
 			if(event.type == PlayerEvent.ON_LOADING && event.eventId == Consts.ON_LOADING_MEDIA_LOADED)
 			{
-				this.setVolume(1);
+				this.log("Volume set to " + this.currentVolume);
+				this.setVolume(this.currentVolume);
 			}
 			
 			this.dispatchEventToJavascript(event.type, event.eventId, event.eventValue);
@@ -352,7 +368,7 @@ package
 		 */
 		public function getVolume():Number
 		{
-			return SoundMixer.soundTransform.volume;
+			return this.currentVolume;
 		}
 		
 		/**
@@ -363,6 +379,7 @@ package
 		public function setVolume(value:Number):void
 		{
 			SoundMixer.soundTransform = new SoundTransform(value);
+			this.currentVolume = value;
 		}
 		
 		// -------- Call Javascript Functions
@@ -426,6 +443,11 @@ package
 			return "video";
 		}
 		
+		/**
+		 * Prints a message on the output console. 
+		 *
+		 * @param message Message to log log.
+		 */
 		private function log(message:String):void
 		{
 			if(verbose)
