@@ -45,7 +45,7 @@ package
 		private var timeChangeTimer:Timer;		// media playback progress timer
 		private var lastTime:Number;			 
 		
-		private var verbose:Boolean = true;		// enable / disable logging
+		private var verbose:Boolean = false;		// enable / disable logging
 		
 		private var mediaOut:Number;
 		private var currentVolume:Number;
