@@ -73,4 +73,4 @@ Methods
 
 Example
 -------
-- The player can be tested using the file bin-debug/test.html. Usage: fill the url field -> press load -> press play.
+- The player can be tested using the file `bin-debug/test.html`. Usage: `fill the url field -> press load -> press play`.
