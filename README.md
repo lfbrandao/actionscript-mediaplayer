@@ -1,5 +1,3 @@
-DepthJS
-=======
 Lightweight Flash object with a Javascript API. Used to play audio and video files on Firefox at Zeega (http://www.zeega.org) and Sensate (http://sensatejournal.com/).
 
 Features
@@ -32,21 +30,20 @@ Events codes
 ------------
 
 - onLoading
-	1 : Player Loaded
-	2 : Metadata Loaded
-	3 : Video (Audio) CanPlay (at cue-in)
-	TO-DO -> 4 : Video (Audio) CanPlayThrough
+	- 1 : Player Loaded
+	- 2 : Metadata Loaded
+	- 3 : Video (Audio) CanPlay (at cue-in)
 	
 - onStateChange
-	1 : Play begun
-	2 : Paused
-	3 : Stopped
-	5 : on Time Change (every 500ms)
-	4 : Video ended
+	- 1 : Play begun
+	- 2 : Paused
+	- 3 : Stopped
+	- 5 : on Time Change (every 500ms)
+	- 4 : Video ended
 	
 - onError
-	1 : Failed To Load Resource (user aborted, network interrupted, decoding error)
-	2 : File Type Not Supported
+	- 1 : Failed To Load Resource (user aborted, network interrupted, decoding error)
+	- 2 : File Type Not Supported
 
 Subscribing / unsubscribing to events from Javascript
 -----------------------------------------------------
@@ -59,3 +56,21 @@ Subscribing / unsubscribing to events from Javascript
 - onStateChange
 - onError	
 	- Subscriber method signature: function subscriber_method_name(eventid)
+	
+Methods
+-------
+
+- load(params) - params: url + "," + start_time + "," + end_time  
+- play()
+- stop()
+- pause()
+- pause(float)
+
+- getVolume()
+- getCurrentTime()
+- getStartTime()
+- getEndTime()
+
+Example
+-------
+- The player can be tested using the file bin-debug/test.html. Usage: fill the url field -> press load -> press play.
