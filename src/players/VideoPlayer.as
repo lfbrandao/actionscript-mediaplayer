@@ -131,7 +131,15 @@ package players
 			this.onStateChange(Consts.ON_STATE_CHANGE_PAUSED);
 			this.status = Consts.STATUS_PAUSED;
 		}
-				
+		
+		/**
+		 * Stops the audio playback. Subsequent calls to 'play' will play the audio from the beginning.
+		 */
+		public function seek(seekTo:Number):void
+		{
+			videoStream.seek(seekTo);
+		}
+		
 		// -------- Playback time
 		
 		/**
@@ -295,6 +303,11 @@ package players
 			
 			this.onLoading(Consts.ON_LOADING_METADATA_LOADED);
 		}
+		
+		public function onPlayStatus(infoObject:Object):void 
+		{ 
+			//trace("onPlayStatus"); 
+		} 
 		
 		// -------- Event Dispatchers
 		

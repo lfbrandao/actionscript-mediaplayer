@@ -101,6 +101,16 @@ package players
 		}
 		
 		/**
+		 * Plays the audio at the position specified by the paramenter.
+		 * @param seekTo Seek position
+		 */
+		public function seek(seekTo:Number):void
+		{
+			this.soundChannel.stop();
+			soundChannel = this.audioFile.play(seekTo * 1000); // convert to ms
+		}
+		
+		/**
 		 * Returns the current playback time.
 		 */
 		public function getCurrentTime():Number

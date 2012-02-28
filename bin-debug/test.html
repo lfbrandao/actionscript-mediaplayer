@@ -119,6 +119,11 @@
 				flashMovie("MediaPlayer").sendToFlash(action, value);
 			}
 			
+			function seek()
+			{
+				value = document.getElementById("txtSeek").value;
+				flashMovie("MediaPlayer").sendToFlash("seek", value);
+			}
 			
 			function loadMovie()
 			{
@@ -241,7 +246,7 @@
 				
 				<a onclick="loadMovie()" href="javascript:void(0);">load</a>
 				<br/>
-				Url <input type="text" id="txtUrl" value="/Users/luisbrandao/Desktop/zeega/Earthless live at Supersonic - Part 2.mp4" style="width:400px;"/>
+				Url <input type="text" id="txtUrl" style="width:400px;"/>
 				<br/>
 				Start playing at <input type="text" id="txtVideoStart" value="0"/>
 				Stop playing at <input type="text" id="txtVideoStop" value="0"/><br/>
@@ -256,6 +261,8 @@
 				<a onclick="sendToFlash('play')" href="javascript:void(0);">play</a> |
 				<a onclick="sendToFlash('pause')" href="javascript:void(0);">pause</a> |
 				<a onclick="sendToFlash('stop')" href="javascript:void(0);">stop</a> |
+				<a onclick="seek()" href="javascript:void(0);">seek to:</a>
+				<input type ="text" id="txtSeek" /> 
 			</div>
 			<div>
 				<h1>Volume</h1>

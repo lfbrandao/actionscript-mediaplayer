@@ -13,6 +13,7 @@ package players
 		function play():void;
 		function pause():void;
 		function stop():void;
+		function seek(seekTo:Number):void;
 		
 		// events
 		function onError(eventId:int):void;

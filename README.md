@@ -1,8 +1,5 @@
-[DRAFT]
-
 =Actionscript media-player
-Lightweight Flash object for playing audio and video files with a Javascript API.
-Used at the Sensate Journal (http://sensatejournal.com/) to play Zeega (http://www.zeega.org) pieces on Firefox.
+Lightweight Flash object with a Javascript API. Used to play audio and video files on Firefox at Zeega (http://www.zeega.org) and Sensate (http://sensatejournal.com/).
 
 == Features
 * video formats supported: mp4, m4v

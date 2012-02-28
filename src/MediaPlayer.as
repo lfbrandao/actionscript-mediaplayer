@@ -111,7 +111,7 @@ package
 		 */
 		public function playerControl(action:String, value:String) : Number
 		{
-			this.log("playerControl " + action);
+			this.log("playerControl " + action + " value: " + value);
 			
 			if(action == "play")
 			{
@@ -126,6 +126,10 @@ package
 			{
 				this.pause();
 				this.timeChangeTimer.stop();
+			}
+			else if(action == "seek")
+			{
+				this.seek(Number(value));
 			}
 			else if(action == "load")
 			{
@@ -223,6 +227,14 @@ package
 			this.timeChangeTimer.start();
 		}
 		
+		/**
+		 * Plays the latest video or audio loaded. If there is no file loaded the error event is triggered.
+		 */
+		private function seek(seekTo:Number):void
+		{
+			this.log(seekTo.toString());
+			this.currentPlayer.seek(seekTo);
+		}
 		
 		// -------- Internal events
 		
@@ -341,6 +353,7 @@ package
 		 */
 		private function onPlayerEvent(event:PlayerEvent):void
 		{
+			this.log(event.type);
 			if(event.type == PlayerEvent.ON_LOADING && event.eventId == Consts.ON_LOADING_METADATA_LOADED)
 			{
 				this.resizePlayer(stage.stageWidth, stage.stageHeight);
