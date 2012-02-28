@@ -26,7 +26,7 @@ Components
 - AudioPlayer extends Sprite, implements IPlayer
 	- MP3 player. 
 
-Events codes
+Event codes
 ------------
 
 - onLoading
@@ -48,28 +48,28 @@ Events codes
 Subscribing / unsubscribing to events from Javascript
 -----------------------------------------------------
 
-- Subscribe: flashobject.addEventListener(event_name, subscriber_method_name);
-- Unsubscribe: flashobject.removeListener(event_name, subscriber_method_name);)
+- Subscribe: `flashobject.addEventListener(event_name, subscriber_method_name);`
+- Unsubscribe: `flashobject.removeListener(event_name, subscriber_method_name);`
 
 - onLoading
-	- Subscriber method signature: function subscriber_method_name(eventid, eventvalue)
+	- Subscriber method signature: `function subscriber_method_name(eventid, eventvalue)`
 - onStateChange
 - onError	
-	- Subscriber method signature: function subscriber_method_name(eventid)
+	- Subscriber method signature: `function subscriber_method_name(eventid)`
 	
 Methods
 -------
 
-- load(params) - params: url + "," + start_time + "," + end_time  
-- play()
-- stop()
-- pause()
-- pause(float)
+- `load(params)` - params: `url + "," + start_time + "," + end_time`
+- `play()`
+- `stop()`
+- `pause()`
+- `pause(float)`
 
-- getVolume()
-- getCurrentTime()
-- getStartTime()
-- getEndTime()
+- `getVolume()`
+- `getCurrentTime()`
+- `getStartTime()`
+- `getEndTime()`
 
 Example
 -------
